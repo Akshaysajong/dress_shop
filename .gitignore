@@ -135,9 +135,6 @@ dmypy.json
 # Django Specific
 *.log
 local_settings.py
-db.sqlite3-journal
-media/
-!media/.gitkeep
 staticfiles/
 !staticfiles/.gitkeep
 
@@ -193,16 +190,7 @@ yarn-error.log*
 secrets/
 private/
 
-# Development database files
 
-
-# Media files (user uploads)
-media/uploads/*
-media/images/*
-media/documents/*
-!media/uploads/.gitkeep
-!media/images/.gitkeep
-!media/documents/.gitkeep
 
 # Cache directories
 .cache/
