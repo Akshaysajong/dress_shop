@@ -137,13 +137,12 @@ if database_url:
     }
 else:
     # Use SQLite database in project directory (not Docker volume)
-    db_path = env('SQLITE_DB_PATH', default=str(BASE_DIR / 'db.sqlite3'))
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': db_path,
-        }
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
+}
 
 
 # Password validation
