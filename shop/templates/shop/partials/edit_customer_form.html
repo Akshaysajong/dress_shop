@@ -1,0 +1,90 @@
+<form hx-post="{% url 'shop:edit_customer' customer.id %}" 
+      hx-target="#editCustomerModal .modal-body" 
+      hx-swap="innerHTML">
+    {% if error %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endif %}
+    
+    <div class="mb-3">
+        <label for="edit-name" class="form-label">
+            <i class="fas fa-user me-1"></i>Customer Name <span class="text-danger">*</span>
+        </label>
+        <input type="text" 
+               class="form-control" 
+               id="edit-name" 
+               name="name" 
+               value="{{ customer.name }}"
+               required 
+               placeholder="Enter customer name">
+    </div>
+    
+    <div class="mb-3">
+        <label for="edit-phone" class="form-label">
+            <i class="fas fa-phone me-1"></i>Phone Number <span class="text-danger">*</span>
+        </label>
+        <input type="tel" 
+               class="form-control" 
+               id="edit-phone" 
+               name="phone" 
+               value="{{ customer.phone }}"
+               required 
+               placeholder="Enter phone number"
+               pattern="[0-9]{10}"
+               title="Please enter a valid 10-digit phone number">
+    </div>
+    
+    <div class="mb-3">
+        <label for="edit-email" class="form-label">
+            <i class="fas fa-envelope me-1"></i>Email Address
+        </label>
+        <input type="email" 
+               class="form-control" 
+               id="edit-email" 
+               name="email" 
+               value="{{ customer.email }}"
+               placeholder="Enter email address (optional)">
+    </div>
+    
+    <div class="mb-3">
+        <label for="edit-address" class="form-label">
+            <i class="fas fa-map-marker-alt me-1"></i>Address
+        </label>
+        <textarea class="form-control" 
+                  id="edit-address" 
+                  name="address" 
+                  rows="3" 
+                  placeholder="Enter customer address (optional)">{{ customer.address }}</textarea>
+    </div>
+    
+    <div class="d-flex justify-content-between">
+        <div class="text-muted small">
+            <i class="fas fa-info-circle me-1"></i>
+            Customer ID: {{ customer.id }} | 
+            Registered: {{ customer.created_at|date:"M d, Y" }}
+        </div>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                <i class="fas fa-times me-2"></i>Cancel
+            </button>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save me-2"></i>Update Customer
+            </button>
+        </div>
+    </div>
+</form>
+
+<script>
+    // Auto-focus on name field when modal is shown
+    document.addEventListener('htmx:afterRequest', function(evt) {
+        if (evt.detail.target.id === 'editCustomerModal' || evt.detail.target.classList.contains('modal-body')) {
+            const nameInput = document.getElementById('edit-name');
+            if (nameInput) {
+                nameInput.focus();
+                nameInput.select();
+            }
+        }
+    });
+</script>

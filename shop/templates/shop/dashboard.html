@@ -1,0 +1,170 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}Dashboard - Dress Shop Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
+    <div>
+        <a href="{% url 'shop:create_bill' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> New Bill
+        </a>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-2">
+        <div class="stat-card">
+            <h3>{{ total_products }}</h3>
+            <p><i class="fas fa-box"></i> Products</p>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+            <h3>{{ total_variants }}</h3>
+            <p><i class="fas fa-tags"></i> Variants</p>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+            <h3>{{ total_customers }}</h3>
+            <p><i class="fas fa-users"></i> Customers</p>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+            <h3>{{ total_bills }}</h3>
+            <p><i class="fas fa-file-invoice"></i> Bills</p>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="stat-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+            <h3>{{ low_stock_variants|length }}</h3>
+            <p><i class="fas fa-exclamation-triangle"></i> Low Stock</p>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="stat-card" style="background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);">
+            <h3>{{ featured_products|length }}</h3>
+            <p><i class="fas fa-star"></i> Featured</p>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Stock by Category -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-pie"></i> Stock by Category</h5>
+            </div>
+            <div class="card-body">
+                {% for category in stock_by_category %}
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span><strong>{{ category.category|title }}:</strong></span>
+                        <span>{{ category.total_quantity }} items ({{ category.total_products }} products)</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar" role="progressbar" 
+                             style="width: {% widthratio category.total_quantity 100 1 %}%; background-color: {% if category.category == 'new' %}#28a745{% elif category.category == 'trend' %}#ffc107{% else %}#6c757d{% endif %}">
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted">No stock data available</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Low Stock Alert -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h5><i class="fas fa-exclamation-triangle"></i> Low Stock Alert</h5>
+            </div>
+            <div class="card-body">
+                {% for product in low_stock_products %}
+                <div class="stock-low p-2 mb-2 rounded">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ product.name }}</strong><br>
+                            <small>{{ product.size }} - {{ product.color }}</small>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-danger">{{ product.quantity }} left</span><br>
+                            <a href="{% url 'shop:add_stock' product.id %}" class="btn btn-sm btn-success btn-action">
+                                <i class="fas fa-plus"></i> Add Stock
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted">All products have sufficient stock</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <!-- Recent Bills -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-receipt"></i> Recent Bills</h5>
+            </div>
+            <div class="card-body">
+                {% for bill in recent_bills %}
+                <div class="border-bottom pb-2 mb-2">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <strong>Bill #{{ bill.id }}</strong><br>
+                            <small class="text-muted">{{ bill.customer.name }} - {{ bill.created_at|date:"M d, Y H:i" }}</small>
+                        </div>
+                        <div class="text-end">
+                            <strong>₹{{ bill.final_amount }}</strong><br>
+                            <a href="{% url 'shop:bill_detail' bill.bill_number %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye"></i> View
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted">No bills found</p>
+                {% endfor %}
+                <div class="text-center mt-3">
+                    <a href="{% url 'shop:bill_list' %}" class="btn btn-outline-primary">View All Bills</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Selling Products -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-trophy"></i> Top Selling Products</h5>
+            </div>
+            <div class="card-body">
+                {% for product in top_products %}
+                <div class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
+                    <div>
+                        <strong>{{ product.name }}</strong><br>
+                        <small class="text-muted">{{ product.size }} - {{ product.color }}</small>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-success">{{ product.total_sold|default:0 }} sold</span><br>
+                        <small class="text-muted">Stock: {{ product.quantity }}</small>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted">No sales data available</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

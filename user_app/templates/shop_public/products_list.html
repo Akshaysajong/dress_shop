@@ -1,0 +1,628 @@
+{% extends 'shop_public/base.html' %}
+
+
+
+{% block title %}Products - Dress Shop{% endblock %}
+
+
+
+{% block extra_css %}
+
+<style>
+
+    .infinite-scroll-container {
+
+        min-height: 400px;
+
+    }
+
+    .loading-indicator {
+
+        display: none;
+
+        text-align: center;
+
+        padding: 20px;
+
+    }
+
+    .loading-spinner {
+
+        display: inline-block;
+
+        width: 20px;
+
+        height: 20px;
+
+        border: 3px solid #f3f3f3;
+
+        border-top: 3px solid #007bff;
+
+        border-radius: 50%;
+
+        animation: spin 1s linear infinite;
+
+    }
+
+    @keyframes spin {
+
+        0% { transform: rotate(0deg); }
+
+        100% { transform: rotate(360deg); }
+
+    }
+
+    .end-message {
+
+        display: none;
+
+        text-align: center;
+
+        padding: 20px;
+
+        color: #6c757d;
+
+    }
+
+    .product-card {
+
+        opacity: 0;
+
+        transform: translateY(20px);
+
+        transition: opacity 0.3s ease, transform 0.3s ease;
+
+    }
+
+    .product-card.loaded {
+
+        opacity: 1;
+
+        transform: translateY(0);
+
+    }
+
+</style>
+
+{% endblock %}
+
+
+
+{% block content %}
+
+<div class="container py-5">
+
+    <!-- Page Header -->
+
+    <div class="row mb-4">
+
+        <div class="col-12">
+
+            <h1 class="display-5 fw-bold">Our Products</h1>
+
+            <p class="text-muted">Discover our amazing collection of fashionable clothing</p>
+
+            {% if total_products %}
+
+                <small class="text-muted">Showing <span id="shown-count">{{ products|length }}</span> of {{ total_products }} products</small>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    
+
+    <!-- Search and Filter -->
+
+    <div class="row mb-4">
+
+        <div class="col-md-6">
+
+            <form method="get" id="searchForm" class="d-flex">
+
+                <input type="text" name="search" class="form-control me-2" placeholder="Search products..." value="{{ search|default:'' }}">
+
+                <button type="submit" class="btn btn-primary">
+
+                    <i class="fas fa-search"></i>
+
+                </button>
+
+            </form>
+
+        </div>
+
+        <div class="col-md-6">
+
+            <form method="get" id="filterForm" class="d-flex">
+
+                <select name="category" class="form-select me-2" onchange="this.form.submit()">
+
+                    <option value="">All Categories</option>
+
+                    <option value="men" {% if category == 'men' %}selected{% endif %}>Men</option>
+
+                    <option value="women" {% if category == 'women' %}selected{% endif %}>Women</option>
+
+                    <option value="unisex" {% if category == 'unisex' %}selected{% endif %}>Unisex</option>
+
+                    <option value="kids" {% if category == 'kids' %}selected{% endif %}>Kids</option>
+
+                </select>
+
+                {% if search %}
+
+                    <input type="hidden" name="search" value="{{ search }}">
+
+                {% endif %}
+
+            </form>
+
+        </div>
+
+    </div>
+
+    
+
+    <!-- Products Grid with Infinite Scroll -->
+
+    <div class="row g-4 infinite-scroll-container" id="productsContainer">
+
+        <!-- Debug: Show template variables -->
+
+        <script>console.log('DEBUG TEMPLATE: Products count:', "{{ products|length }}");</script>
+
+        <script>console.log('DEBUG TEMPLATE: Has more:', "{{ has_more }}");</script>
+
+        <script>console.log('DEBUG TEMPLATE: Current page:', "{{ current_page }}");</script>
+
+        <script>console.log('DEBUG TEMPLATE: Total products:', "{{ total_products }}");</script>
+
+        
+
+        {% if products %}
+
+            <script>console.log('DEBUG TEMPLATE: Products exist, rendering...');</script>
+
+            {% include 'shop_public/products_partial.html' %}
+
+        {% else %}
+
+            <script>console.log('DEBUG TEMPLATE: No products found');</script>
+
+        {% endif %}
+
+    </div>
+
+    
+
+    <!-- No Products Message -->
+
+    {% if not products %}
+
+    <div class="col-12 text-center py-5">
+
+        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+
+        <h4 class="text-muted">No products found</h4>
+
+        <p class="text-muted">Try adjusting your search or filter criteria</p>
+
+        <a href="{% url 'shop_public:shop_public_products_list' %}" class="btn btn-primary">
+
+            <i class="fas fa-redo me-2"></i>Clear Filters
+
+        </a>
+
+    </div>
+
+    {% endif %}
+
+    
+
+    <!-- Loading Indicator -->
+
+    <div class="loading-indicator" id="loadingIndicator">
+
+        <div class="loading-spinner"></div>
+
+        <p class="mt-2 text-muted">Loading more products...</p>
+
+    </div>
+
+    
+
+    <!-- End Message -->
+
+    <div class="end-message" id="endMessage">
+
+        <i class="fas fa-check-circle me-2"></i>
+
+        You've reached the end of our product collection
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+
+{% block extra_js %}
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function() {
+
+    const productsContainer = document.getElementById('productsContainer');
+
+    const loadingIndicator = document.getElementById('loadingIndicator');
+
+    const endMessage = document.getElementById('endMessage');
+
+    const shownCount = document.getElementById('shown-count');
+
+    const searchForm = document.getElementById('searchForm');
+
+    const filterForm = document.getElementById('filterForm');
+
+    
+
+    let currentPage = parseInt("{{ current_page|default:1 }}");
+
+    let isLoading = false;
+
+    let hasMore = {{ has_more|yesno:'true,false' }};
+
+    const search = "{{ search|default:'' }}";
+
+    const category = "{{ category|default:'' }}";
+
+    
+
+    // Initial debugging
+
+    console.log('DEBUG: Initial state - Page:', currentPage, 'Has More:', hasMore, 'Search:', search, 'Category:', category);
+
+    console.log('DEBUG: Total products from template:', "{{ total_products|default:0 }}");
+
+    
+
+    // Animate initial products
+
+    setTimeout(() => {
+
+        document.querySelectorAll('.product-card').forEach(card => {
+
+            card.classList.add('loaded');
+
+        });
+
+    }, 100);
+
+    
+
+    // Infinite scroll function
+
+    function loadMoreProducts() {
+
+        if (isLoading || !hasMore) {
+
+            console.log('DEBUG: Skipping load - isLoading:', isLoading, 'hasMore:', hasMore);
+
+            return;
+
+        }
+
+        
+
+        isLoading = true;
+
+        loadingIndicator.style.display = 'block';
+
+        
+
+        currentPage++;
+
+        
+
+        // Build URL with parameters
+
+        let url = `/shop/products/?page=${currentPage}`;
+
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+
+        if (category) url += `&category=${encodeURIComponent(category)}`;
+
+        
+
+        console.log('DEBUG: Loading page', currentPage, 'from URL:', url);
+
+        console.log('DEBUG: Search:', search, 'Category:', category);
+
+        
+
+        // Make AJAX request
+
+        fetch(url, {
+
+            method: 'GET',
+
+            headers: {
+
+                'X-Requested-With': 'XMLHttpRequest',
+
+                'Content-Type': 'text/html',
+
+            }
+
+        })
+
+        .then(response => {
+
+            console.log('DEBUG: AJAX response status:', response.status);
+
+            if (!response.ok) {
+
+                throw new Error(`HTTP error! status: ${response.status}`);
+
+            }
+
+            return response.text();
+
+        })
+
+        .then(html => {
+
+            console.log('DEBUG: AJAX response HTML length:', html.length);
+
+            console.log('DEBUG: AJAX response preview:', html.substring(0, 200));
+
+            
+
+            // Create temporary container to parse HTML
+
+            const tempDiv = document.createElement('div');
+
+            tempDiv.innerHTML = html;
+
+            
+
+            // Extract product cards
+
+            const newProducts = tempDiv.querySelectorAll('.col-md-6, .col-lg-4, .col-xl-3');
+
+            console.log('DEBUG: Found new products:', newProducts.length);
+
+            
+
+            if (newProducts.length > 0) {
+
+                // Add products with animation
+
+                newProducts.forEach((product, index) => {
+
+                    const clonedProduct = product.cloneNode(true);
+
+                    clonedProduct.style.opacity = '0';
+
+                    clonedProduct.style.transform = 'translateY(20px)';
+
+                    
+
+                    productsContainer.appendChild(clonedProduct);
+
+                    
+
+                    // Animate in with delay
+
+                    setTimeout(() => {
+
+                        clonedProduct.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+
+                        clonedProduct.style.opacity = '1';
+
+                        clonedProduct.style.transform = 'translateY(0)';
+
+                    }, index * 100);
+
+                });
+
+                
+
+                // Update shown count
+
+                const currentCount = parseInt(shownCount.textContent);
+
+                shownCount.textContent = currentCount + newProducts.length;
+
+                console.log('DEBUG: Updated count to:', shownCount.textContent);
+
+            }
+
+            
+
+            // Check if there are more products
+
+            const newLoadMoreBtn = tempDiv.querySelector('.load-more-btn');
+
+            console.log('DEBUG: Load more button found:', !!newLoadMoreBtn);
+
+            if (newLoadMoreBtn && newLoadMoreBtn.dataset.nextPage) {
+
+                hasMore = true;
+
+                console.log('DEBUG: More products available, next page:', newLoadMoreBtn.dataset.nextPage);
+
+            } else {
+
+                hasMore = false;
+
+                console.log('DEBUG: No more products available');
+
+                endMessage.style.display = 'block';
+
+            }
+
+            
+
+            isLoading = false;
+
+            loadingIndicator.style.display = 'none';
+
+        })
+
+        .catch(error => {
+
+            console.error('Error loading more products:', error);
+
+            isLoading = false;
+
+            loadingIndicator.style.display = 'none';
+
+            
+
+            // Show error message
+
+            const errorDiv = document.createElement('div');
+
+            errorDiv.className = 'alert alert-warning mt-3';
+
+            errorDiv.innerHTML = `
+
+                <i class="fas fa-exclamation-triangle me-2"></i>
+
+                Error loading products. Please try again.
+
+            `;
+
+            productsContainer.parentElement.appendChild(errorDiv);
+
+            
+
+            // Remove error message after 3 seconds
+
+            setTimeout(() => {
+
+                errorDiv.remove();
+
+            }, 3000);
+
+        });
+
+    }
+
+    
+
+    // Scroll event listener
+
+    let scrollTimeout;
+
+    window.addEventListener('scroll', function() {
+
+        // Debounce scroll event
+
+        clearTimeout(scrollTimeout);
+
+        scrollTimeout = setTimeout(function() {
+
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+            const windowHeight = window.innerHeight;
+
+            const documentHeight = document.documentElement.scrollHeight;
+
+            
+
+            // Calculate scroll percentage
+
+            const scrollPercentage = (scrollTop / (documentHeight - windowHeight)) * 100;
+
+            
+
+            // Load more when user is 80% down the page
+
+            if (scrollPercentage >= 80 && !isLoading && hasMore) {
+
+                console.log('DEBUG: Scroll percentage:', scrollPercentage.toFixed(2) + '%', 'Loading more products');
+
+                loadMoreProducts();
+
+            }
+
+        }, 100);
+
+    });
+
+    
+
+    // Also check on window resize
+
+    window.addEventListener('resize', function() {
+
+        clearTimeout(scrollTimeout);
+
+        scrollTimeout = setTimeout(function() {
+
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+            const windowHeight = window.innerHeight;
+
+            const documentHeight = document.documentElement.scrollHeight;
+
+            
+
+            const scrollPercentage = (scrollTop / (documentHeight - windowHeight)) * 100;
+
+            
+
+            if (scrollPercentage >= 80 && !isLoading && hasMore) {
+
+                console.log('DEBUG: Resize triggered load, scroll percentage:', scrollPercentage.toFixed(2) + '%');
+
+                loadMoreProducts();
+
+            }
+
+        }, 100);
+
+    });
+
+    
+
+    // Reset page when searching or filtering
+
+    if (searchForm) {
+
+        searchForm.addEventListener('submit', function() {
+
+            // Reset scroll position
+
+            window.scrollTo(0, 0);
+
+        });
+
+    }
+
+    
+
+    if (filterForm) {
+
+        filterForm.addEventListener('change', function() {
+
+            // Reset scroll position
+
+            window.scrollTo(0, 0);
+
+        });
+
+    }
+
+});
+
+</script>
+
+{% endblock %}
+

@@ -1,0 +1,283 @@
+# Django Git Ignore File
+# Comprehensive .gitignore for Django projects with Docker, Redis, and development tools
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
+#   However, in case of collaboration, if having platform-specific dependencies or dependencies
+#   having no cross-platform support, pipenv may install dependencies that don't work, or not
+#   install all needed dependencies.
+#Pipfile.lock
+
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+.env.development
+.env.production
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# Django Specific
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+!media/.gitkeep
+staticfiles/
+!staticfiles/.gitkeep
+
+# Static and Media Files (keep templates but ignore compiled static)
+static/css/*.min.css
+static/js/*.min.js
+static/CACHE/
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+docker-compose.prod.yml
+
+# Redis dump
+dump.rdb
+
+# Node.js (if using frontend build tools)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.eslintcache
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.tmp
+*.temp
+
+# Security files
+*.pem
+*.key
+*.crt
+*.p12
+secrets/
+private/
+
+# Development database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Media files (user uploads)
+media/uploads/*
+media/images/*
+media/documents/*
+!media/uploads/.gitkeep
+!media/images/.gitkeep
+!media/documents/.gitkeep
+
+# Cache directories
+.cache/
+cache/
+.sass-cache/
+.pytest_cache/
+
+# Virtual environments
+bin/
+include/
+lib/
+lib64/
+share/
+pyvenv.cfg
+
+# Project specific
+.env.local
+.env.development
+.env.production
+config/local_settings.py
+logs/
+*.log.*
+
+# SSL certificates
+*.ssl
+*.crt
+*.key
+*.pem
+
+# Backup and temporary files
+*.backup
+*.bak
+*.tmp
+*.temp
+
+# Local development
+local_dev.py
+dev_settings.py
+
+# Performance and profiling
+*.prof
+*.profile
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Documentation build
+docs/_build/
+docs/build/
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+.nox/
+
+# Jupyter notebooks
+.ipynb_checkpoints/
+
+# Machine learning / data science
+*.pkl
+*.model
+*.h5
+*.pb
+
+# Local configuration
+config/local.py
+settings/local.py
+
+# Database migrations (keep migrations, ignore local migration files)
+*/migrations/local_*

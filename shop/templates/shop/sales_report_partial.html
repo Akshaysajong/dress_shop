@@ -1,0 +1,198 @@
+<!-- Charts Row 1 -->
+            <div class="row mb-4">
+                <div class="col-lg-3 mb-3">
+                    <div class="chart-card fade-in">
+                        <div class="chart-header">
+                            <h5 class="chart-title">
+                                <i class="fas fa-chart-line text-primary me-2"></i>
+                                Revenue Trend (Last 30 Days)
+                            </h5>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button type="button" class="btn btn-outline-primary active" onclick="updateChart('revenue')">Revenue</button>
+                                <button type="button" class="btn btn-outline-primary" onclick="updateChart('orders')">Orders</button>
+                            </div>
+                        </div>
+                        <canvas id="salesChart" height="80"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-3 mb-3">
+                    <div class="chart-card fade-in">
+                        <div class="chart-header">
+                            <h5 class="chart-title">
+                                <i class="fas fa-clock text-info me-2"></i>
+                                Sales by Hour
+                            </h5>
+                        </div>
+                        <canvas id="hourlyChart" height="80"></canvas>
+                    </div>
+                </div>
+            </div>
+
+        <!-- Tables Row -->
+        <div class="row mb-4">
+            <div class="col-lg-4 mb-3">
+                <div class="chart-card fade-in">
+                    <div class="chart-header">
+                        <h5 class="chart-title">
+                            <i class="fas fa-users text-success me-2"></i>
+                            Top Customers
+                        </h5>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-modern">
+                            <thead class="table-modern">
+                                <tr>
+                                    <th>Customer</th>
+                                    <th>Phone</th>
+                                    <th>Orders</th>
+                                    <th>Total Spent</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for customer in top_customers %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-sm bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-2">
+                                                    <i class="fas fa-user text-primary"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="fw-medium">{{ customer.customer__name }}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">{{ customer.customer__phone }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ customer.bill_count }} orders</span>
+                                        </td>
+                                        <td>
+                                            <span class="fw-medium">₹{{ customer.total_spent|floatformat:0 }}</span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-3">
+                <div class="chart-card fade-in">
+                    <div class="chart-header">
+                        <h5 class="chart-title">
+                            <i class="fas fa-credit-card text-warning me-2"></i>
+                            Payment Methods
+                        </h5>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-modern">
+                            <thead class="table-modern">
+                                <tr>
+                                    <th>Method</th>
+                                    <th>Orders</th>
+                                    <th>Total</th>
+                                    <th>Average</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for method in payment_stats %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge-modern bg-light text-dark">
+                                                {{ method.get_payment_method_display }}
+                                            </span>
+                                        </td>
+                                        <td>{{ method.count }}</td>
+                                        <td>₹{{ method.total|floatformat:0 }}</td>
+                                        <td>₹{{ method.total|div:method.count|floatformat:0 }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-3">
+                <div class="chart-card fade-in">
+                    <div class="chart-header">
+                        <h5 class="chart-title">
+                            <i class="fas fa-chart-pie text-info me-2"></i>
+                            Order Status
+                        </h5>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-modern">
+                            <thead class="table-modern">
+                                <tr>
+                                    <th>Status</th>
+                                    <th>Orders</th>
+                                    <th>Percentage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for status in status_stats %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge-modern bg-{{ status.status|yesno:'success,warning,danger' }}">
+                                                {{ status.get_status_display|title }}
+                                            </span>
+                                        </td>
+                                        <td>{{ status.count }}</td>
+                                        <td>
+                                            {% if total_bills > 0 %}
+                                                {{ status.count|mul:100|div:total_bills|floatformat:1 }}%
+                                            {% else %}
+                                                0%
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Products Row -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="chart-card fade-in">
+                    <div class="chart-header">
+                        <h5 class="chart-title">
+                            <i class="fas fa-box text-primary me-2"></i>
+                            Top Selling Products
+                        </h5>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-modern">
+                            <thead class="table-modern">
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Total Sold</th>
+                                    <th>Revenue</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in top_products %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="fw-medium">{{ product.billitem__product__name }}</div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ product.total_quantity }} units</span>
+                                        </td>
+                                        <td>
+                                            <span class="fw-medium">₹{{ product.total_quantity|mul:1000|floatformat:0 }}K</span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>

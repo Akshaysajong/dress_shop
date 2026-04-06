@@ -1,0 +1,159 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}Bill #{{ bill.id }} - Dress Shop{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-file-invoice"></i> Bill #{{ bill.bill_number|default:bill.id }}</h1>
+    <div>
+        <button onclick="window.print()" class="btn btn-outline-primary">
+            <i class="fas fa-print"></i> Print
+        </button>
+        <a href="{% url 'shop:bill_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Bills
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-receipt"></i> Bill Details</h5>
+            </div>
+            <div class="card-body">
+                <!-- Customer Information -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6>Customer Information</h6>
+                        <p><strong>Name:</strong> {{ bill.customer.name }}</p>
+                        <p><strong>Phone:</strong> {{ bill.customer.phone }}</p>
+                        {% if bill.customer.email %}
+                        <p><strong>Email:</strong> {{ bill.customer.email }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Bill Information</h6>
+                        <p><strong>Bill Number:</strong> #{{ bill.bill_number|default:bill.id }}</p>
+                        <p><strong>Date:</strong> {{ bill.created_at|date:"F d, Y H:i" }}</p>
+                    </div>
+                </div>
+
+                <!-- Bill Items -->
+                <h6>Items Purchased</h6>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Product</th>
+                                <th>Size</th>
+                                <th>Color</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in bill.items.all %}
+                            <tr>
+                                <td>{{ item.product_variant.product.name }}</td>
+                                <td>{{ item.product_variant.size.name }}</td>
+                                <td>{{ item.product_variant.color.name }}</td>
+                                <td>₹{{ item.unit_price }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>₹{{ item.total }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">No items found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <th colspan="5" class="text-end">Subtotal:</th>
+                                <th>₹{{ bill.subtotal }}</th>
+                            </tr>
+                            {% if bill.discount_amount > 0 %}
+                            <tr>
+                                <th colspan="5" class="text-end">Discount:</th>
+                                <th>-₹{{ bill.discount_amount }}</th>
+                            </tr>
+                            {% endif %}
+                            {% if bill.tax_amount > 0 %}
+                            <tr>
+                                <th colspan="5" class="text-end">Tax:</th>
+                                <th>₹{{ bill.tax_amount }}</th>
+                            </tr>
+                            {% endif %}
+                            <tr class="table-success">
+                                <th colspan="5" class="text-end">Total Amount:</th>
+                                <th>₹{{ bill.total_amount }}</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-qrcode"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==" 
+                         alt="QR Code" class="img-fluid" style="max-width: 150px;">
+                </div>
+                <p class="text-muted">Bill #{{ bill.bill_number|default:bill.id }}</p>
+                <div class="d-grid gap-2">
+                    <a href="tel:{{ bill.customer.phone }}" class="btn btn-outline-primary">
+                        <i class="fas fa-phone"></i> Call Customer
+                    </a>
+                    <a href="mailto:{{ bill.customer.email }}" class="btn btn-outline-info">
+                        <i class="fas fa-envelope"></i> Email Bill
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle"></i> Payment Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <small class="text-muted">Payment Status:</small>
+                    <span class="badge bg-{{ bill.status|yesno:'success,warning' }} ms-2">{{ bill.get_status_display|title }}</span>
+                </div>
+                <div class="mb-2">
+                    <small class="text-muted">Payment Method:</small>
+                    <span class="ms-2">{{ bill.get_payment_method_display|title }}</span>
+                </div>
+                <hr>
+                <div class="text-center">
+                    <h4 class="text-success">₹{{ bill.total_amount }}</h4>
+                    <small class="text-muted">Total Paid</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+    .btn {
+        display: none !important;
+    }
+}
+</style>
+{% endblock %}

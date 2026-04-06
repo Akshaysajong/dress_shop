@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bill #{{ bill.bill_number }} - {{ company_name }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 20mm;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.4;
+            color: #333;
+            font-size: 12px;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .company-info h1 {
+            color: #007bff;
+            margin: 0;
+            font-size: 24px;
+        }
+        .company-info p {
+            margin: 3px 0;
+            color: #666;
+            font-size: 11px;
+        }
+        .bill-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .bill-details h2 {
+            color: #007bff;
+            margin: 0 0 10px 0;
+            font-size: 18px;
+        }
+        .bill-details p {
+            margin: 5px 0;
+            font-size: 11px;
+        }
+        .customer-info {
+            margin-bottom: 30px;
+        }
+        .customer-info h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .customer-info p {
+            margin: 5px 0;
+            font-size: 11px;
+        }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .items-table th {
+            background: #007bff;
+            color: white;
+            padding: 8px;
+            text-align: left;
+            font-weight: bold;
+            font-size: 11px;
+        }
+        .items-table td {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+            font-size: 11px;
+        }
+        .items-table tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        .totals {
+            text-align: right;
+            margin-top: 20px;
+        }
+        .totals div {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        .totals .total {
+            font-weight: bold;
+            color: #007bff;
+            font-size: 16px;
+            border-top: 2px solid #007bff;
+            padding-top: 10px;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            text-align: center;
+            color: #666;
+            font-size: 10px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 10px;
+        }
+        .status-paid { background: #28a745; color: white; }
+        .status-pending { background: #ffc107; color: black; }
+        .status-cancelled { background: #dc3545; color: white; }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="company-info">
+            <h1>{{ company_name }}</h1>
+            <p>{{ company_address }}</p>
+            <p>Phone: {{ company_phone }}</p>
+            <p>Email: {{ company_email }}</p>
+        </div>
+    </div>
+
+    <!-- Bill Information -->
+    <div class="bill-info">
+        <div class="bill-details">
+            <h2>Bill #{{ bill.bill_number }}</h2>
+            <p><strong>Date:</strong> {{ generated_date|date:"F d, Y" }}</p>
+            <p><strong>Payment Method:</strong> {{ bill.get_payment_method_display|title }}</p>
+            <p><strong>Status:</strong> 
+                <span class="status-badge status-{{ bill.status }}">
+                    {{ bill.get_status_display|title }}
+                </span>
+            </p>
+        </div>
+    </div>
+
+    <!-- Customer Information -->
+    <div class="customer-info">
+        <h3>Customer Information</h3>
+        <p><strong>Name:</strong> {{ customer.name }}</p>
+        <p><strong>Phone:</strong> {{ customer.phone }}</p>
+        {% if customer.email %}
+        <p><strong>Email:</strong> {{ customer.email }}</p>
+        {% endif %}
+        {% if customer.address %}
+        <p><strong>Address:</strong> {{ customer.address }}</p>
+        {% endif %}
+    </div>
+
+    <!-- Bill Items -->
+    <h3>Bill Details</h3>
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Size</th>
+                <th>Color</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>
+                    {% if item.product %}
+                        {{ item.product.name }}
+                    {% elif item.product_variant %}
+                        {{ item.product_variant.product.name }}
+                    {% endif %}
+                </td>
+                <td>
+                    {% if item.product_variant %}
+                        {{ item.product_variant.size.name }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>
+                    {% if item.product_variant %}
+                        {{ item.product_variant.color.name }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>{{ item.quantity }}</td>
+                <td>₹{{ item.unit_price|floatformat:2 }}</td>
+                <td>₹{{ item.total|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Totals -->
+    <div class="totals">
+        <div><strong>Subtotal:</strong> ₹{{ bill.subtotal|floatformat:2 }}</div>
+        {% if bill.discount_amount > 0 %}
+        <div><strong>Discount:</strong> ₹{{ bill.discount_amount|floatformat:2 }}</div>
+        {% endif %}
+        {% if bill.tax_amount > 0 %}
+        <div><strong>Tax:</strong> ₹{{ bill.tax_amount|floatformat:2 }}</div>
+        {% endif %}
+        <div class="total"><strong>Total Amount:</strong> ₹{{ bill.total_amount|floatformat:2 }}</div>
+    </div>
+
+    <!-- Notes -->
+    {% if bill.notes %}
+    <div style="margin-top: 30px;">
+        <h3>Notes</h3>
+        <p>{{ bill.notes }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>Thank you for your business!</p>
+        <p>This is a computer-generated bill and does not require a signature.</p>
+        <p>For any queries, please contact us at {{ company_phone }} or {{ company_email }}</p>
+        <p>Generated on: {{ generated_date|date:"F d, Y H:i" }}</p>
+    </div>
+</body>
+</html>

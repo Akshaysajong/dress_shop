@@ -1,0 +1,142 @@
+{% extends 'shop_public/base.html' %}
+
+{% block title %}About Us - Dress Shop{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="text-center mb-5">
+                <h1 class="display-4 fw-bold mb-4">About Dress Shop</h1>
+                <p class="lead text-muted">Your trusted fashion destination since 2020</p>
+            </div>
+            
+            <!-- Our Story -->
+            <section class="mb-5">
+                <h2 class="mb-4">Our Story</h2>
+                <p class="text-muted">
+                    Welcome to Dress Shop, where fashion meets quality and style meets comfort. Founded in 2020, 
+                    we started as a small boutique with a simple mission: to provide our customers with 
+                    high-quality, fashionable clothing at affordable prices.
+                </p>
+                <p class="text-muted">
+                    Over the years, we've grown from a small store to a trusted name in fashion, 
+                    serving thousands of satisfied customers across the region. Our commitment to quality 
+                    and customer satisfaction remains unchanged.
+                </p>
+            </section>
+            
+            <!-- Our Mission -->
+            <section class="mb-5">
+                <h2 class="mb-4">Our Mission</h2>
+                <div class="row">
+                    <div class="col-md-4 text-center mb-4">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <i class="fas fa-gem fa-3x text-primary mb-3"></i>
+                                <h5>Quality First</h5>
+                                <p class="text-muted small">We source the finest materials and ensure every piece meets our quality standards.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-center mb-4">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <i class="fas fa-heart fa-3x text-danger mb-3"></i>
+                                <h5>Customer Love</h5>
+                                <p class="text-muted small">Your satisfaction is our priority. We go above and beyond to make you happy.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-center mb-4">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <i class="fas fa-leaf fa-3x text-success mb-3"></i>
+                                <h5>Sustainability</h5>
+                                <p class="text-muted small">We're committed to sustainable fashion and ethical business practices.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Our Values -->
+            <section class="mb-5">
+                <h2 class="mb-4">Our Values</h2>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <h5><i class="fas fa-check-circle text-success me-2"></i>Authenticity</h5>
+                        <p class="text-muted">All our products are 100% authentic and sourced directly from trusted manufacturers.</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <h5><i class="fas fa-check-circle text-success me-2"></i>Affordability</h5>
+                        <p class="text-muted">We believe fashion should be accessible to everyone without compromising on quality.</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <h5><i class="fas fa-check-circle text-success me-2"></i>Innovation</h5>
+                        <p class="text-muted">We stay ahead of fashion trends and bring you the latest styles.</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <h5><i class="fas fa-check-circle text-success me-2"></i>Community</h5>
+                        <p class="text-muted">We're more than a store - we're a community of fashion lovers.</p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Team Section -->
+            <section class="mb-5">
+                <h2 class="mb-4">Meet Our Team</h2>
+                <div class="row text-center">
+                    <div class="col-md-4 mb-4">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-user fa-2x"></i>
+                                </div>
+                                <h5>Fashion Expert</h5>
+                                <p class="text-muted small">Our team of fashion experts curates the best collection for you.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <div class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-headset fa-2x"></i>
+                                </div>
+                                <h5>Customer Support</h5>
+                                <p class="text-muted small">Dedicated support team to help you with all your needs.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <div class="rounded-circle bg-warning text-white d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-truck fa-2x"></i>
+                                </div>
+                                <h5>Fast Delivery</h5>
+                                <p class="text-muted small">Quick and reliable delivery to get your fashion to you fast.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Call to Action -->
+            <section class="text-center">
+                <div class="bg-light rounded p-4">
+                    <h3 class="mb-3">Visit Our Store</h3>
+                    <p class="text-muted mb-4">Experience our collection in person and let our fashion experts help you find the perfect outfit.</p>
+                    <a href="{% url 'shop_public:contact' %}" class="btn btn-primary btn-lg me-3">
+                        <i class="fas fa-map-marker-alt me-2"></i>Get Directions
+                    </a>
+                    <a href="{% url 'shop_public:shop_public_products_list' %}" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-shopping-bag me-2"></i>Shop Online
+                    </a>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+{% endblock %}

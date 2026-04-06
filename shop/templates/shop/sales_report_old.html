@@ -1,0 +1,319 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}Sales Report - Dress Shop{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-1">
+                        <i class="fas fa-chart-line me-2 text-primary"></i>
+                        Sales Report
+                    </h2>
+                    <p class="text-muted mb-0">Comprehensive sales analytics and insights</p>
+                </div>
+                <div>
+                    <a href="{% url 'shop:bill_list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Bills
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="dashboard-card p-4">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="bg-primary bg-opacity-10 rounded-circle p-3">
+                            <i class="fas fa-rupee-sign text-primary fs-4"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="mb-1 text-muted">Total Revenue</h6>
+                        <h3 class="mb-0">₹{{ total_revenue|floatformat:2 }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-card p-4">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="bg-success bg-opacity-10 rounded-circle p-3">
+                            <i class="fas fa-shopping-cart text-success fs-4"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="mb-1 text-muted">Total Bills</h6>
+                        <h3 class="mb-0">{{ total_bills }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-card p-4">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="bg-info bg-opacity-10 rounded-circle p-3">
+                            <i class="fas fa-box text-info fs-4"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="mb-1 text-muted">Items Sold</h6>
+                        <h3 class="mb-0">{{ total_items_sold }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-card p-4">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="bg-warning bg-opacity-10 rounded-circle p-3">
+                            <i class="fas fa-chart-bar text-warning fs-4"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="mb-1 text-muted">Avg. Bill Amount</h6>
+                        <h3 class="mb-0">₹{{ avg_bill_amount|floatformat:2 }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="dashboard-card p-3">
+                <form method="get">
+                    <div class="row align-items-center">
+                        <div class="col-md-3">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-calendar"></i>
+                                </span>
+                                <input type="date" 
+                                       class="form-control" 
+                                       name="start_date" 
+                                       value="{{ start_date }}"
+                                       placeholder="Start Date">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-calendar-check"></i>
+                                </span>
+                                <input type="date" 
+                                       class="form-control" 
+                                       name="end_date" 
+                                       value="{{ end_date }}"
+                                       placeholder="End Date">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-filter me-2"></i>Apply Filters
+                            </button>
+                            <a href="{% url 'shop:sales_report' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Clear
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts and Tables -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="dashboard-card">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users me-2"></i>
+                        Top Customers by Revenue
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if top_customers %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Customer</th>
+                                        <th>Total Spent</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for customer in top_customers %}
+                                        <tr>
+                                            <td>
+                                                <span class="badge bg-primary">{{ forloop.counter }}</span>
+                                            </td>
+                                            <td>
+                                                <a href="{% url 'shop:customer_detail' customer.customer__id %}" class="text-decoration-none">
+                                                    {{ customer.customer__name }}
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <span class="fw-medium">₹{{ customer.total_spent|floatformat:2 }}</span>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <div class="text-center py-4">
+                                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">No customers found</h5>
+                                <p class="text-muted">No sales data available for the selected period.</p>
+                            </div>
+                        {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="dashboard-card">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0">
+                        <i class="fas fa-credit-card me-2"></i>
+                        Sales by Payment Method
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if payment_stats %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Payment Method</th>
+                                        <th>Transaction Count</th>
+                                        <th>Total Revenue</th>
+                                        <th>Percentage</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for stat in payment_stats %}
+                                        <tr>
+                                            <td>
+                                                <span class="badge bg-light text-dark">
+                                                    {{ stat.get_payment_method_display }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">{{ stat.count }}</span>
+                                            </td>
+                                            <td>
+                                                <span class="fw-medium">₹{{ stat.total|floatformat:2 }}</span>
+                                            </td>
+                                            <td>
+                                                {% if total_revenue > 0 %}
+                                                    <span class="badge bg-success">
+                                                        {% widthratio stat.total total_revenue 100 %}%
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">0%</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <div class="text-center py-4">
+                                <i class="fas fa-credit-card fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">No payment data available</h5>
+                                <p class="text-muted">No sales data available for the selected period.</p>
+                            </div>
+                        {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sales Chart -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="dashboard-card">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Daily Sales Trend (Last 30 Days)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="salesChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Sales chart data
+    const dailySales = {{ daily_sales|safe }};
+    
+    // Prepare data for Chart.js
+    const labels = dailySales.map(item => item.date);
+    const data = dailySales.map(item => item.revenue);
+    
+    // Create chart
+    const ctx = document.getElementById('salesChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Daily Revenue',
+                data: data,
+                borderColor: 'rgb(79, 70, 229)',
+                backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                tension: 0.1,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ₹' + context.parsed.y.toLocaleString('en-IN');
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '₹' + value.toLocaleString('en-IN');
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

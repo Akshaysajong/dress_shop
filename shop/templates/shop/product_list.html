@@ -1,0 +1,553 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}All Products - Dress Shop{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-list"></i> All Products</h1>
+    <div>
+        <a href="{% url 'shop:product_stock_management' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+        <a href="/admin/shop/product/add/" class="btn btn-outline-primary ms-2">
+            <i class="fas fa-cog"></i> Add via Admin
+        </a>
+    </div>
+</div>
+
+<!-- Advanced Filters -->
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-filter"></i> Advanced Filters & Search</h5>
+            <button class="btn btn-sm btn-light" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse">
+                <i class="fas fa-chevron-down"></i> Toggle Filters
+            </button>
+        </div>
+    </div>
+    <div class="collapse show" id="filterCollapse">
+        <div class="card-body">
+            <form method="get" class="g-3">
+                <!-- Search Bar Section -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text bg-primary text-white">
+                                <i class="fas fa-search"></i>
+                            </span>
+                            <input type="text" name="search" class="form-control" 
+                                   placeholder="Search products by name, description, or brand...">
+                            {% if search_query %}
+                                <span class="input-group-text">
+                                    <a href="?{% for key, value in request.GET.items %}{% if key != 'search' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" 
+                                       class="text-decoration-none text-muted">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filter Options -->
+                <div class="row g-3 mb-4">
+                    <div class="col-lg-2">
+                        <div class="form-floating">
+                            <select name="category" class="form-select" id="categorySelect">
+                                <option value="">All Categories</option>
+                                {% for category_value, category_label in categories %}
+                                    <option value="{{ category_value }}" {% if current_category == category_value %}selected{% endif %}>
+                                        {{ category_label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <label for="categorySelect">
+                                <i class="fas fa-list"></i> Cat
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-2">
+                        <div class="form-floating">
+                            <select name="gender" class="form-select" id="genderSelect">
+                                <option value="">All Genders</option>
+                                {% for gender_value, gender_label in genders %}
+                                    <option value="{{ gender_value }}" {% if current_gender == gender_value %}selected{% endif %}>
+                                        {{ gender_label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <label for="genderSelect">
+                                <i class="fas fa-venus-mars"></i> Gender
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-2">
+                        <div class="form-floating">
+                            <select name="brand" class="form-select" id="brandSelect">
+                                <option value="">All Brands</option>
+                                {% for brand in brands %}
+                                    <option value="{{ brand.id }}" {% if current_brand == brand.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ brand.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <label for="brandSelect">
+                                <i class="fas fa-tag"></i> Brand
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-2">
+                        <div class="form-floating">
+                            <select name="size" class="form-select" id="sizeSelect">
+                                <option value="">All Sizes</option>
+                                {% for size in sizes %}
+                                    <option value="{{ size.id }}" {% if current_size == size.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ size.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <label for="sizeSelect">
+                                <i class="fas fa-ruler"></i> Size
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-2">
+                        <div class="form-floating">
+                            <select name="color" class="form-select" id="colorSelect">
+                                <option value="">All Colors</option>
+                                {% for color in colors %}
+                                    <option value="{{ color.id }}" {% if current_color == color.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ color.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <label for="colorSelect">
+                                <i class="fas fa-palette"></i> Color
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-2">
+                        <div class="form-floating">
+                            <select name="stock_status" class="form-select" id="stockStatusSelect">
+                                <option value="">All Stock Status</option>
+                                <option value="in_stock">In Stock</option>
+                                <option value="low_stock">Low Stock</option>
+                                <option value="out_of_stock">Out of Stock</option>
+                            </select>
+                            <label for="stockStatusSelect">
+                                <i class="fas fa-warehouse"></i> Stock
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-2">
+                        <div class="form-floating">
+                            <select name="sort_by" class="form-select" id="sortBySelect">
+                                <option value="name">Sort by Name</option>
+                                <option value="created_date">Sort by Date</option>
+                                <option value="price_low">Price: Low to High</option>
+                                <option value="price_high">Price: High to Low</option>
+                                <option value="stock_level">Stock Level</option>
+                            </select>
+                            <label for="sortBySelect">
+                                <i class="fas fa-sort"></i> Sort
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-2">
+                        <div class="form-floating">
+                            <select name="per_page" class="form-select" id="perPageSelect">
+                                <option value="10">10 per page</option>
+                                <option value="20" selected>20 per page</option>
+                                <option value="50">50 per page</option>
+                                <option value="100">100 per page</option>
+                            </select>
+                            <label for="perPageSelect">
+                                <i class="fas fa-list-ol"></i> Per Page
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Filters Display -->
+                {% if search_query or current_category or current_gender or current_brand or current_size or current_color %}
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="alert alert-info d-flex align-items-center justify-content-between mb-0">
+                            <div>
+                                <i class="fas fa-filter-circle me-2"></i>
+                                <strong>Active Filters:</strong>
+                                {% if search_query %}
+                                    <span class="badge bg-primary me-1">
+                                        Search: "{{ search_query }}"
+                                        <a href="?{% for key, value in request.GET.items %}{% if key != 'search' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" 
+                                           class="text-white text-decoration-none ms-1">
+                                            <i class="fas fa-times"></i>
+                                        </a>
+                                    </span>
+                                {% endif %}
+                                {% if current_category %}
+                                    <span class="badge bg-info me-1">
+                                        Category: {{ current_category }}
+                                        <a href="?{% for key, value in request.GET.items %}{% if key != 'category' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" 
+                                           class="text-white text-decoration-none ms-1">
+                                            <i class="fas fa-times"></i>
+                                        </a>
+                                    </span>
+                                {% endif %}
+                                {% if current_gender %}
+                                    <span class="badge bg-success me-1">
+                                        Gender: {{ current_gender }}
+                                        <a href="?{% for key, value in request.GET.items %}{% if key != 'gender' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" 
+                                           class="text-white text-decoration-none ms-1">
+                                            <i class="fas fa-times"></i>
+                                        </a>
+                                    </span>
+                                {% endif %}
+                                {% if current_brand %}
+                                    {% for brand in brands %}
+                                        {% if brand.id|stringformat:"s" == current_brand %}
+                                            <span class="badge bg-warning text-dark me-1">
+                                                Brand: {{ brand.name }}
+                                                <a href="?{% for key, value in request.GET.items %}{% if key != 'brand' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" 
+                                                   class="text-decoration-none ms-1">
+                                                    <i class="fas fa-times"></i>
+                                                </a>
+                                            </span>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                                {% if current_size %}
+                                    {% for size in sizes %}
+                                        {% if size.id|stringformat:"s" == current_size %}
+                                            <span class="badge bg-secondary me-1">
+                                                Size: {{ size.name }}
+                                                <a href="?{% for key, value in request.GET.items %}{% if key != 'size' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" 
+                                                   class="text-white text-decoration-none ms-1">
+                                                    <i class="fas fa-times"></i>
+                                                </a>
+                                            </span>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                                {% if current_color %}
+                                    {% for color in colors %}
+                                        {% if color.id|stringformat:"s" == current_color %}
+                                            <span class="badge bg-dark me-1">
+                                                Color: {{ color.name }}
+                                                <a href="?{% for key, value in request.GET.items %}{% if key != 'color' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" 
+                                                   class="text-white text-decoration-none ms-1">
+                                                    <i class="fas fa-times"></i>
+                                                </a>
+                                            </span>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                            <a href="{% url 'shop:product_list' %}" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-times"></i> Clear All
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Action Buttons -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-search"></i> Apply Filters
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-lg" onclick="clearAllFilters()">
+                                <i class="fas fa-times"></i> Clear All
+                            </button>
+                            <button type="button" class="btn btn-outline-info btn-lg" onclick="exportResults()">
+                                <i class="fas fa-download"></i> Export Results
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function clearAllFilters() {
+    window.location.href = "{% url 'shop:product_list' %}";
+}
+
+function exportResults() {
+    // Get current URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    urlParams.set('export', 'csv');
+    window.location.href = "{% url 'shop:product_list' %}?" + urlParams.toString();
+}
+
+// Auto-submit form on filter change for better UX
+document.querySelectorAll('.form-select').forEach(select => {
+    select.addEventListener('change', function() {
+        if (this.value !== '') {
+            this.form.submit();
+        }
+    });
+});
+</script>
+
+<!-- Products Table -->
+<div class="card">
+    <div class="card-header">
+        <h5><i class="fas fa-boxes"></i> All Products ({{ page_obj.paginator.count }} total)</h5>
+    </div>
+    <div class="card-body">
+        {% if products %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th><i class="fas fa-box"></i> Product</th>
+                        <th><i class="fas fa-tag"></i> Brand</th>
+                        <th><i class="fas fa-list"></i> Category</th>
+                        <th><i class="fas fa-layer-group"></i> Variants</th>
+                        <th><i class="fas fa-warehouse"></i> Total Stock</th>
+                        <th><i class="fas fa-info-circle"></i> Status</th>
+                        <th><i class="fas fa-cogs"></i> Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                {% if product.main_image %}
+                                    <img src="{{ product.main_image.url }}" alt="{{ product.name }}" 
+                                         class="me-2" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">
+                                {% else %}
+                                    <div class="me-2 bg-light d-flex align-items-center justify-content-center" 
+                                         style="width: 40px; height: 40px; border-radius: 4px;">
+                                        <i class="fas fa-image text-muted"></i>
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <strong>{{ product.name }}</strong>
+                                    {% if product.is_featured %}
+                                        <i class="fas fa-star text-warning" title="Featured"></i>
+                                    {% endif %}
+                                    <br>
+                                    <small class="text-muted">{{ product.sku|default:"No SKU" }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark">{{ product.brand.name }}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-info">{{ product.get_category_display }}</span>
+                            {% if product.gender %}
+                                <br><small class="text-muted">{{ product.get_gender_display }}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    {{ product.variants.count }} Variants
+                                </button>
+                                <ul class="dropdown-menu" style="max-width: 300px;">
+                                    {% for variant in product.variants.all %}
+                                    <li class="dropdown-item d-flex justify-content-between align-items-center">
+                                        <span>
+                                            {{ variant.size.name }} - {{ variant.color.name }}
+                                        </span>
+                                        <span class="badge {% if variant.quantity == 0 %}bg-danger{% elif variant.quantity < 5 %}bg-warning{% else %}bg-success{% endif %}">
+                                            {{ variant.quantity }}
+                                        </span>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <span class="badge {% if product.total_stock == 0 %}bg-danger{% elif product.total_stock < 10 %}bg-warning{% else %}bg-success{% endif %} me-2">
+                                    {{ product.total_stock }}
+                                </span>
+                                {% if product.total_stock == 0 %}
+                                    <i class="fas fa-exclamation-triangle text-danger" title="Out of Stock"></i>
+                                {% elif product.total_stock < 10 %}
+                                    <i class="fas fa-exclamation-circle text-warning" title="Low Stock"></i>
+                                {% else %}
+                                    <i class="fas fa-check-circle text-success" title="Good Stock"></i>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            {% if product.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{% url 'shop:product_detail' product.slug %}" class="btn btn-sm btn-outline-primary" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'shop:product_edit' product.id %}" class="btn btn-sm btn-outline-warning" title="Edit Product">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-sm btn-outline-success dropdown-toggle" data-bs-toggle="dropdown" title="Stock Actions">
+                                        <i class="fas fa-warehouse"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><h6 class="dropdown-header">Quick Stock Actions</h6></li>
+                                        {% for variant in product.variants.all %}
+                                        <li>
+                                            <a class="dropdown-item" href="{% url 'shop:add_stock' variant.id %}">
+                                                <i class="fas fa-plus text-success"></i> {{ variant.size.name }} - {{ variant.color.name }} (+{{ variant.quantity }})
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="{% url 'shop:reduce_stock' variant.id %}">
+                                                <i class="fas fa-minus text-danger"></i> {{ variant.size.name }} - {{ variant.color.name }} ({{ variant.quantity }})
+                                            </a>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <nav aria-label="Product pagination">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li>
+                        <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                            <i class="fas fa-chevron-left"></i> Previous
+                        </a>
+                    </li>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <li class="active">
+                            <span>{{ num }}</span>
+                        </li>
+                    {% elif num > page_obj.number and num <= page_obj.paginator.num_pages %}
+                        <li>
+                            <a href="?page={{ num }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                    <li>
+                        <a href="?page={{ page_obj.next_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                            Next <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <h5>No products found</h5>
+            <p class="text-muted">
+                {% if search_query or current_category or current_brand or current_size or current_color %}
+                    No products match your current filters. Try adjusting your search criteria.
+                {% else %}
+                    Your inventory is empty. Start by adding your first product.
+                {% endif %}
+            </p>
+            <a href="{% url 'shop:product_stock_management' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add Your First Product
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+
+<!-- Add Stock Modals -->
+{% for product in products %}
+<div class="modal fade" id="addStockModal{{ product.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Stock - {{ product.name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'shop:add_stock' product.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Current Stock:</label>
+                        <p class="fw-bold">{{ product.quantity }} items</p>
+                    </div>
+                    <div class="mb-3">
+                        <label for="quantity{{ product.id }}" class="form-label">Quantity to Add:</label>
+                        <input type="number" name="quantity" id="quantity{{ product.id }}" 
+                               class="form-control" min="1" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Add Stock</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Reduce Stock Modals -->
+{% for product in products %}
+{% if product.quantity > 0 %}
+<div class="modal fade" id="reduceStockModal{{ product.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Reduce Stock - {{ product.name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'shop:reduce_stock' product.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Current Stock:</label>
+                        <p class="fw-bold">{{ product.quantity }} items</p>
+                    </div>
+                    <div class="mb-3">
+                        <label for="reduce_quantity{{ product.id }}" class="form-label">Quantity to Reduce:</label>
+                        <input type="number" name="quantity" id="reduce_quantity{{ product.id }}" 
+                               class="form-control" min="1" max="{{ product.quantity }}" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning">Reduce Stock</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+{% endblock %}

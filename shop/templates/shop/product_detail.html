@@ -1,0 +1,763 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}{{ product.name }} - Dress Shop Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Bootstrap-based Product Detail Page - Similar to shop_public */
+.content {
+    background: #f8fafc;
+    min-height: 100vh;
+}
+
+.content .container-fluid {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+    background: transparent !important;
+    padding: 0 !important;
+    margin-bottom: 1.5rem !important;
+    font-size: 0.9rem !important;
+}
+
+.breadcrumb-item a {
+    color: #2563eb !important;
+    text-decoration: none !important;
+}
+
+.breadcrumb-item a:hover {
+    color: #1d4ed8 !important;
+}
+
+.breadcrumb-item.active {
+    color: #6b7280 !important;
+}
+
+/* Product Header Card */
+.product-header-card {
+    background: white !important;
+    border-radius: 1rem !important;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1) !important;
+    padding: 2rem !important;
+    margin-bottom: 2rem !important;
+}
+
+.product-title {
+    font-size: 2.5rem !important;
+    font-weight: 700 !important;
+    color: #1e293b !important;
+    margin-bottom: 1rem !important;
+}
+
+.product-badges {
+    margin-bottom: 1.5rem !important;
+}
+
+.product-badges .badge {
+    margin-right: 0.5rem !important;
+    padding: 0.5rem 1rem !important;
+    font-size: 0.875rem !important;
+    border-radius: 0.5rem !important;
+}
+
+/* Image Section */
+.image-card {
+    background: white !important;
+    border-radius: 1rem !important;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1) !important;
+    overflow: hidden !important;
+    height: 100%;
+}
+
+.main-image-container {
+    position: relative !important;
+    height: 500px !important;
+    background: #f3f4f6 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: hidden !important;
+}
+
+.main-image-container img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+}
+
+.no-image-placeholder {
+    text-align: center !important;
+    color: #6b7280 !important;
+}
+
+.no-image-placeholder i {
+    font-size: 4rem !important;
+    margin-bottom: 1rem !important;
+    opacity: 0.5 !important;
+}
+
+/* Thumbnails */
+.thumbnails-container {
+    padding: 1rem !important;
+    background: #f8fafc !important;
+}
+
+.thumbnail-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)) !important;
+    gap: 0.75rem !important;
+}
+
+.thumbnail-item {
+    aspect-ratio: 1 !important;
+    border: 2px solid #e5e7eb !important;
+    border-radius: 0.5rem !important;
+    overflow: hidden !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+}
+
+.thumbnail-item:hover {
+    border-color: #2563eb !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1) !important;
+}
+
+.thumbnail-item.active {
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1) !important;
+}
+
+.thumbnail-item img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+}
+
+/* Product Info Card */
+.info-card {
+    background: white !important;
+    border-radius: 1rem !important;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1) !important;
+    padding: 2rem !important;
+    height: 100%;
+}
+
+.info-section {
+    margin-bottom: 2rem !important;
+    padding-bottom: 2rem !important;
+    border-bottom: 1px solid #e5e7eb !important;
+}
+
+.info-section:last-child {
+    border-bottom: none !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+.info-section h5 {
+    font-size: 1.125rem !important;
+    font-weight: 600 !important;
+    color: #1e293b !important;
+    margin-bottom: 1rem !important;
+}
+
+/* Price Section */
+.price-display {
+    font-size: 2.5rem !important;
+    font-weight: 800 !important;
+    color: #2563eb !important;
+    margin-bottom: 0.5rem !important;
+}
+
+.original-price {
+    font-size: 1.25rem !important;
+    color: #6b7280 !important;
+    text-decoration: line-through !important;
+    margin-right: 0.75rem !important;
+}
+
+.discount-badge {
+    background: #ef4444 !important;
+    color: white !important;
+    padding: 0.25rem 0.75rem !important;
+    border-radius: 0.5rem !important;
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+}
+
+/* Details Grid */
+.details-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1rem !important;
+}
+
+.detail-item {
+    padding: 1rem !important;
+    background: #f8fafc !important;
+    border-radius: 0.5rem !important;
+    border: 1px solid #e5e7eb !important;
+    transition: all 0.2s !important;
+}
+
+.detail-item:hover {
+    border-color: #2563eb !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1) !important;
+}
+
+.detail-label {
+    font-size: 0.75rem !important;
+    color: #6b7280 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    margin-bottom: 0.25rem !important;
+    font-weight: 600 !important;
+}
+
+.detail-value {
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    color: #1e293b !important;
+}
+
+/* Stock Summary */
+.stock-summary {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    color: white !important;
+    padding: 1.5rem !important;
+    border-radius: 1rem !important;
+}
+
+.stock-stats {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 1rem !important;
+    margin-bottom: 1rem !important;
+}
+
+.stock-stat {
+    background: rgba(255, 255, 255, 0.1) !important;
+    padding: 1rem !important;
+    border-radius: 0.5rem !important;
+    text-align: center !important;
+}
+
+.stock-value {
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 0.25rem !important;
+}
+
+.stock-label {
+    font-size: 0.75rem !important;
+    opacity: 0.9 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+}
+
+/* Variants Table */
+.variants-table {
+    background: white !important;
+    border-radius: 1rem !important;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1) !important;
+    overflow: hidden !important;
+}
+
+.variants-table .table {
+    margin-bottom: 0 !important;
+}
+
+.variants-table .table thead {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+    color: white !important;
+}
+
+.variants-table .table th {
+    border: none !important;
+    padding: 1rem !important;
+    font-weight: 600 !important;
+    font-size: 0.875rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+}
+
+.variants-table .table td {
+    padding: 1rem !important;
+    vertical-align: middle !important;
+    border-top: 1px solid #e5e7eb !important;
+}
+
+.variants-table .table tbody tr:hover {
+    background: #f8fafc !important;
+}
+
+/* Quick Actions */
+.quick-actions-card {
+    background: white !important;
+    border-radius: 1rem !important;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1) !important;
+    overflow: hidden !important;
+}
+
+.quick-actions-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+}
+
+.quick-action-item {
+    padding: 1.5rem !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 1rem !important;
+    text-decoration: none !important;
+    color: #1e293b !important;
+    font-weight: 500 !important;
+    transition: all 0.2s !important;
+    border: none !important;
+    background: transparent !important;
+    cursor: pointer !important;
+}
+
+.quick-action-item:hover {
+    background: #2563eb !important;
+    color: white !important;
+    transform: translateY(-2px) !important;
+}
+
+.quick-action-item i {
+    font-size: 1.25rem !important;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .content .container-fluid {
+        padding: 1rem !important;
+    }
+    
+    .product-title {
+        font-size: 1.75rem !important;
+    }
+    
+    .main-image-container {
+        height: 300px !important;
+    }
+    
+    .details-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .stock-stats {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .quick-actions-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .variants-table .table th,
+    .variants-table .table td {
+        padding: 0.75rem 0.5rem !important;
+        font-size: 0.875rem !important;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'shop:dashboard' %}">Dashboard</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{% url 'shop:product_stock_management' %}">Products</a>
+                </li>
+                <li class="breadcrumb-item active">{{ product.name }}</li>
+            </ol>
+        </nav>
+        
+        <!-- Product Header -->
+        <div class="product-header-card">
+            <div class="d-flex justify-content-between align-items-start flex-wrap">
+                <div>
+                    <h1 class="product-title">{{ product.name }}</h1>
+                    <div class="product-badges">
+                        <span class="badge bg-primary">{{ product.get_gender_display }}</span>
+                        {% if product.category %}
+                            <span class="badge bg-secondary">{{ product.get_category_display }}</span>
+                        {% endif %}
+                        {% if product.is_featured %}
+                            <span class="badge bg-warning">Featured</span>
+                        {% endif %}
+                        {% if not product.is_active %}
+                            <span class="badge bg-danger">Inactive</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div>
+                    <a href="{% url 'shop:product_stock_management' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Products
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Product Main Content -->
+        <div class="row">
+            <!-- Product Images -->
+            <div class="col-lg-6 mb-4">
+                <div class="image-card">
+                    <div class="main-image-container" onclick="">
+                        {% if product.main_image %}
+                            <img src="{{ product.main_image.url }}" alt="{{ product.name }}" id="mainImage">
+                        {% else %}
+                            <p>No Image</p>      
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Thumbnails -->
+                    <div class="thumbnails-container">
+                        <div class="thumbnail-grid">
+                            <!-- Main Image Thumbnail -->
+                            {% if product.main_image %}
+                                <div class="thumbnail-item active" onclick="changeMainImage('{{ product.main_image.url }}', this)" title="Main Image">
+                                    <img src="{{ product.main_image.url }}" alt="Main Image">
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Variant Images -->
+                            {% for variant in product.variants.all %}
+                                {% if variant.image %}
+                                    <div class="thumbnail-item" onclick="changeMainImage('{{ variant.image.url }}', this)" title="{{ variant.size.name }} - {{ variant.color.name }}">
+                                        <img src="{{ variant.image.url }}" alt="{{ variant.size.name }} - {{ variant.color.name }}">
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            <!-- Gallery Images -->
+                            {% for image in product.images.all %}
+                                <div class="thumbnail-item" onclick="changeMainImage('{{ image.image.url }}', this)" title="{{ image.alt_text|default:'Gallery Image' }}">
+                                    <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:'Gallery Image' }}">
+                                </div>
+                            {% endfor %}
+                            
+                            <!-- Add Image Button -->
+                            <div class="thumbnail-item" onclick="window.open('/admin/shop/product/{{ product.id }}/change/', '_blank')" title="Add more images">
+                                <div class="d-flex align-items-center justify-content-center h-100 bg-light">
+                                    <i class="fas fa-plus text-muted"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Product Info -->
+            <div class="col-lg-6">
+                <div class="info-card">
+                    <!-- Price Section -->
+                    <div class="info-section">
+                        <h5>Price Information</h5>
+                        <div class="price-display">
+                            ₹{{ product.effective_price|floatformat:0 }}
+                        </div>
+                        {% if product.discount_percentage > 0 %}
+                            <div>
+                                <span class="original-price">₹{{ product.selling_price|floatformat:0 }}</span>
+                                <span class="discount-badge">{{ product.discount_percentage }}% OFF</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Description -->
+                    <div class="info-section">
+                        <h5>Description</h5>
+                        <p class="text-muted">{{ product.description|default:"No description available." }}</p>
+                    </div>
+                    
+                    <!-- Product Details -->
+                    <div class="info-section">
+                        <h5>Product Details</h5>
+                        <div class="details-grid">
+                            <div class="detail-item">
+                                <div class="detail-label">SKU</div>
+                                <div class="detail-value">{{ product.sku|default:"-" }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Brand</div>
+                                <div class="detail-value">{{ product.brand.name|default:"-" }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Category</div>
+                                <div class="detail-value">{{ product.get_category_display|default:"-" }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Gender</div>
+                                <div class="detail-value">{{ product.get_gender_display|default:"-" }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Season</div>
+                                <div class="detail-value">{{ product.get_season_display|default:"-" }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Occasion</div>
+                                <div class="detail-value">{{ product.get_occasion_display|default:"-" }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Fabric</div>
+                                <div class="detail-value">{{ product.fabric_type|default:"-" }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Weight</div>
+                                <div class="detail-value">{{ product.weight|default:"-" }}g</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Materials -->
+                    {% if product.materials.exists %}
+                    <div class="info-section">
+                        <h5>Materials</h5>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for material in product.materials.all %}
+                                <span class="badge bg-primary">{{ material.name }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Stock Summary -->
+                    <div class="info-section">
+                        <div class="stock-summary">
+                            <h5 class="mb-3">Stock Summary</h5>
+                            <div class="stock-stats">
+                                <div class="stock-stat">
+                                    <div class="stock-value">{{ product.variants.count }}</div>
+                                    <div class="stock-label">Variants</div>
+                                </div>
+                                <div class="stock-stat">
+                                    <div class="stock-value">{{ product.total_stock }}</div>
+                                    <div class="stock-label">Total Stock</div>
+                                </div>
+                                <div class="stock-stat">
+                                    <div class="stock-value">{{ product.reorder_level }}</div>
+                                    <div class="stock-label">Reorder Level</div>
+                                </div>
+                            </div>
+                            <div>
+                                {% if product.total_stock == 0 %}
+                                    <span class="badge bg-danger">Out of Stock</span>
+                                {% elif product.total_stock < 5 %}
+                                    <span class="badge bg-warning">Low Stock</span>
+                                {% else %}
+                                    <span class="badge bg-success">In Stock</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Product Variants Table -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="variants-table">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-tags me-2"></i>Product Variants
+                            <span class="badge bg-light text-dark ms-auto">{{ product.variants.count }} variants</span>
+                        </h5>
+                    </div>
+                    <div class="p-0">
+                        {% if product.variants.exists %}
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th><i class="fas fa-ruler me-1"></i>Size</th>
+                                            <th><i class="fas fa-palette me-1"></i>Color</th>
+                                            <th><i class="fas fa-barcode me-1"></i>SKU</th>
+                                            <th><i class="fas fa-tag me-1"></i>Price</th>
+                                            <th><i class="fas fa-warehouse me-1"></i>Stock</th>
+                                            <th><i class="fas fa-info-circle me-1"></i>Status</th>
+                                            <th><i class="fas fa-cogs me-1"></i>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for variant in product.variants.all %}
+                                        <tr>
+                                            <td>
+                                                <span class="badge bg-light text-dark">{{ variant.size.name }}</span>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <span>{{ variant.color.name }}</span>
+                                                    {% if variant.color.hex_code %}
+                                                        <span class="ms-2" style="display: inline-block; width: 16px; height: 16px; background-color: {{ variant.color.hex_code }}; border-radius: 50%; border: 2px solid white; box-shadow: 0 1px 2px rgba(0,0,0,0.1);"></span>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <code>{{ variant.sku }}</code>
+                                            </td>
+                                            <td>
+                                                <div class="fw-bold text-success">₹{{ variant.effective_price|floatformat:0 }}</div>
+                                                {% if variant.price_override %}
+                                                    <i class="fas fa-tag text-info" title="Price Override" data-bs-toggle="tooltip"></i>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="badge {% if variant.quantity < 5 %}bg-warning{% else %}bg-success{% endif %}">
+                                                    {{ variant.quantity }} units
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {% if variant.quantity == 0 %}
+                                                    <span class="badge bg-danger">Out of Stock</span>
+                                                {% elif variant.quantity < 5 %}
+                                                    <span class="badge bg-warning">Low Stock</span>
+                                                {% else %}
+                                                    <span class="badge bg-success">In Stock</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <button class="btn btn-sm btn-success" data-bs-toggle="modal" 
+                                                            data-bs-target="#addStockModal{{ variant.id }}" title="Add Stock">
+                                                        <i class="fas fa-plus"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-warning" data-bs-toggle="modal" 
+                                                            data-bs-target="#reduceStockModal{{ variant.id }}" 
+                                                            {% if variant.quantity == 0 %}disabled{% endif %} title="Reduce Stock">
+                                                        <i class="fas fa-minus"></i>
+                                                    </button>
+                                                    {% if variant.image %}
+                                                        <button class="btn btn-sm btn-info" onclick="changeMainImage('{{ variant.image.url }}', document.querySelector('[onclick*=\"{{ variant.image.url }}\"]'))" title="View Image">
+                                                            <i class="fas fa-image"></i>
+                                                        </button>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">No variants found for this product.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="quick-actions-card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-tools me-2"></i>Quick Actions
+                        </h5>
+                    </div>
+                    <div class="p-0">
+                        <div class="quick-actions-grid">
+                            <a href="/admin/shop/product/{{ product.id }}/change/" class="quick-action-item">
+                                <i class="fas fa-edit"></i>
+                                <span>Edit Product</span>
+                            </a>
+                            <a href="/admin/shop/productvariant/add/?product={{ product.id }}" class="quick-action-item">
+                                <i class="fas fa-plus"></i>
+                                <span>Add Variant</span>
+                            </a>
+                            <a href="{% url 'shop:create_bill' %}" class="quick-action-item">
+                                <i class="fas fa-receipt"></i>
+                                <span>Create Bill</span>
+                            </a>
+                            <button class="quick-action-item" onclick="window.print()">
+                                <i class="fas fa-print"></i>
+                                <span>Print Details</span>
+                            </button>
+                            <button class="quick-action-item" onclick="exportProductData()">
+                                <i class="fas fa-download"></i>
+                                <span>Export Data</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<script>
+function changeMainImage(imageUrl, thumbnailElement) {
+    const mainImage = document.getElementById('mainImage');
+    
+    if (mainImage && imageUrl !== '#') {
+        // Update main image
+        mainImage.src = imageUrl;
+        
+        // Update active thumbnail
+        document.querySelectorAll('.thumbnail').forEach(thumb => {
+            thumb.classList.remove('active');
+        });
+        thumbnailElement.classList.add('active');
+    }
+}
+
+function openImageZoom(imageUrl) {
+    if (imageUrl !== '#') {
+        // Create a modal or open image in new tab
+        window.open(imageUrl, '_blank');
+    }
+}
+
+function exportProductData() {
+    // Export product data as JSON
+    const productData = {
+        name: '{{ product.name }}',
+        sku: '{{ product.sku|default:"" }}',
+        price: '{{ product.effective_price }}',
+        description: '{{ product.description|default:"" }}',
+        category: '{{ product.get_category_display }}',
+        gender: '{{ product.get_gender_display }}',
+        stock: '{{ product.total_stock }}',
+        variants: {{ product.variants.count }},
+        featured: '{{ product.is_featured }}',
+        active: '{{ product.is_active }}'
+    };
+    
+    const dataStr = JSON.stringify(productData, null, 2);
+    const blob = new Blob([dataStr], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `product_{{ product.id }}_{{ product.slug }}.json`;
+    document.body.appendChild(a);
+    a.click();
+    
+    URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+}
+</script>

@@ -1,0 +1,252 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}Create Bill - Dress Shop{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-receipt"></i> Create New Bill</h1>
+    <a href="{% url 'shop:bill_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Bills
+    </a>
+</div>
+
+<form method="post" id="billForm">
+    {% csrf_token %}
+    
+    <!-- Customer Information -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5><i class="fas fa-user"></i> Customer Information</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <label for="customer_phone" class="form-label">Phone Number *</label>
+                    <input type="tel" name="customer_phone" id="customer_phone" 
+                           class="form-control" required placeholder="Enter phone number to search customer...">
+                    <div id="customerSearchResult" class="mt-2"></div>
+                </div>
+                <div class="col-md-3">
+                    <label for="customer_name" class="form-label">Customer Name *</label>
+                    <input type="text" name="customer_name" id="customer_name" 
+                           class="form-control" required>
+                </div>
+                <div class="col-md-3">
+                    <label for="customer_email" class="form-label">Email</label>
+                    <input type="email" name="customer_email" id="customer_email" 
+                           class="form-control">
+                </div>
+                <div class="col-md-3">
+                    <label for="payment_method" class="form-label">Payment Method</label>
+                    <select name="payment_method" id="payment_method" class="form-select">
+                        {% for method_value, method_label in payment_methods %}
+                        <option value="{{ method_value }}">{{ method_label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bill Items -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5><i class="fas fa-shopping-cart"></i> Bill Items</h5>
+            <button type="button" class="btn btn-sm btn-primary" onclick="addBillItem()">
+                <i class="fas fa-plus"></i> Add Item
+            </button>
+        </div>
+        <div class="card-body">
+            <div id="billItems">
+                <div class="bill-item row mb-3" data-item-index="0">
+                    <div class="col-md-5">
+                        <label class="form-label">Product Variant *</label>
+                        <select name="variant_id" class="form-select variant-select" required onchange="updatePriceAndStock(this)">
+                            <option value="">Select a variant</option>
+                            {% for variant in variants %}
+                            <option value="{{ variant.id }}" 
+                                    data-price="{{ variant.effective_price }}" 
+                                    data-stock="{{ variant.quantity }}"
+                                    data-product="{{ variant.product.name }}"
+                                    data-size="{{ variant.size.name }}"
+                                    data-color="{{ variant.color.name }}">
+                                {{ variant.product.name }} - {{ variant.size.name }} - {{ variant.color.name }} (Stock: {{ variant.quantity }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Quantity *</label>
+                        <input type="number" name="quantity" class="form-control quantity-input" 
+                               min="1" required onchange="calculateTotal()">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Price</label>
+                        <input type="text" class="form-control price-display" readonly>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Total</label>
+                        <input type="text" class="form-control total-display" readonly>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-end mt-3">
+                <h4>Grand Total: <span id="grandTotal">₹0.00</span></h4>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submit Button -->
+    <div class="text-center">
+        <button type="submit" class="btn btn-success btn-lg">
+            <i class="fas fa-check"></i> Generate Bill
+        </button>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let itemIndex = 1;
+
+// Pre-load variants data to avoid template loops in JS
+const variantsData = [
+    {% for variant in variants %}
+    {
+        id: {{ variant.id }},
+        name: "{{ variant.product.name }} - {{ variant.size.name }} - {{ variant.color.name }}",
+        price: "{{ variant.effective_price }}",
+        stock: {{ variant.quantity }}
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
+
+function addBillItem() {
+    const container = document.getElementById('billItems');
+    const newItem = document.createElement('div');
+    newItem.className = 'bill-item row mb-3';
+    newItem.dataset.itemIndex = itemIndex;
+    
+    // Generate options from pre-loaded data
+    let options = '<option value="">Select a variant</option>';
+    variantsData.forEach(variant => {
+        options += `<option value="${variant.id}" 
+                    data-price="${variant.price}" 
+                    data-stock="${variant.stock}" 
+                    data-product="${variant.name}">
+                    ${variant.name} (Stock: ${variant.stock})
+                </option>`;
+    });
+    
+    newItem.innerHTML = `
+        <div class="col-md-5">
+            <label class="form-label">Product Variant *</label>
+            <select name="variant_id" class="form-select variant-select" required onchange="updatePriceAndStock(this)">
+                ${options}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Quantity *</label>
+            <input type="number" name="quantity" class="form-control quantity-input" 
+                   min="1" required onchange="calculateTotal()">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Price</label>
+            <input type="text" class="form-control price-display" readonly>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Total</label>
+            <div class="input-group">
+                <input type="text" class="form-control total-display" readonly>
+                <button type="button" class="btn btn-danger" onclick="removeBillItem(this)">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(newItem);
+    itemIndex++;
+}
+
+function updatePriceAndStock(select) {
+    const selectedOption = select.options[select.selectedIndex];
+    const price = selectedOption.dataset.price;
+    const stock = parseInt(selectedOption.dataset.stock);
+    const quantityInput = select.closest('.bill-item').querySelector('.quantity-input');
+    const priceDisplay = select.closest('.bill-item').querySelector('.price-display');
+    const totalDisplay = select.closest('.bill-item').querySelector('.total-display');
+    
+    priceDisplay.value = price ? `₹${parseFloat(price).toFixed(2)}` : '';
+    
+    if (stock && quantityInput.value > stock) {
+        quantityInput.value = stock;
+        quantityInput.max = stock;
+    } else {
+        quantityInput.max = '';
+    }
+    
+    calculateTotal();
+}
+
+function calculateTotal() {
+    let grandTotal = 0;
+    const billItems = document.querySelectorAll('.bill-item');
+    
+    billItems.forEach(item => {
+        const quantity = parseFloat(item.querySelector('.quantity-input').value) || 0;
+        const price = parseFloat(item.querySelector('.price-display').value.replace('₹', '')) || 0;
+        const total = quantity * price;
+        item.querySelector('.total-display').value = `₹${total.toFixed(2)}`;
+        grandTotal += total;
+    });
+    
+    document.getElementById('grandTotal').textContent = `₹${grandTotal.toFixed(2)}`;
+}
+
+function removeBillItem(button) {
+    button.closest('.bill-item').remove();
+    calculateTotal();
+}
+
+// Customer search functionality
+let searchTimeout;
+document.getElementById('customer_phone').addEventListener('input', function(e) {
+    clearTimeout(searchTimeout);
+    const phone = e.target.value;
+    
+    if (phone.length >= 3) {
+        searchTimeout = setTimeout(() => {
+            fetch(`/api/search-customer/?phone=${phone}`)
+                .then(response => response.json())
+                .then(data => {
+                    const resultDiv = document.getElementById('customerSearchResult');
+                    if (data.customer) {
+                        resultDiv.innerHTML = `
+                            <div class="alert alert-success">
+                                <strong>Found:</strong> ${data.customer.name}<br>
+                                <small>${data.customer.email || 'No email'}</small>
+                            </div>
+                        `;
+                        document.getElementById('customer_name').value = data.customer.name;
+                        document.getElementById('customer_email').value = data.customer.email || '';
+                    } else {
+                        resultDiv.innerHTML = '<div class="alert alert-info">No customer found with this phone</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Customer search error:', error);
+                });
+        }, 300);
+    } else {
+        document.getElementById('customerSearchResult').innerHTML = '';
+    }
+});
+
+// Initialize first item
+document.addEventListener('DOMContentLoaded', function() {
+    calculateTotal();
+});
+</script>
+{% endblock %}

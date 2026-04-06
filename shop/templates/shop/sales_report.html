@@ -1,0 +1,1028 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+<style>
+    .htmx-request {
+        opacity: 0.7;
+        transition: opacity 0.3s ease;
+    }
+    
+    .htmx-indicator {
+        display: none;
+    }
+    
+    .htmx-request .htmx-indicator {
+        display: inline-block;
+    }
+    
+    .spinner-border-sm {
+        width: 1rem;
+        height: 1rem;
+    }
+/* Modern Dashboard Styles */
+.dashboard-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem 0;
+    margin: -1rem -1rem 2rem -1rem;
+    border-radius: 0 0 1rem 1rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.stat-icon.revenue { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+.stat-icon.bills { background: linear-gradient(135deg, #f093fb, #f5576c); color: white; }
+.stat-icon.items { background: linear-gradient(135deg, #4facfe, #00f2fe); color: white; }
+.stat-icon.average { background: linear-gradient(135deg, #43e97b, #38f9d7); color: white; }
+.stat-icon.discount { background: linear-gradient(135deg, #fa709a, #fee140); color: white; }
+.stat-icon.tax { background: linear-gradient(135deg, #30cfd0, #330867); color: white; }
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2d3748;
+    word-wrap: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+.stat-label {
+    color: #718096;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.growth-indicator {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 2rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: 0.5rem;
+}
+
+.growth-indicator.positive {
+    background: rgba(72, 187, 120, 0.1);
+    color: #48bb78;
+}
+
+.growth-indicator.negative {
+    background: rgba(245, 101, 101, 0.1);
+    color: #f56565;
+}
+
+.filter-card {
+    background: white;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    margin-bottom: 2rem;
+}
+
+.chart-card {
+    background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+    border-radius: 1.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 0 1px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    margin-bottom: 2rem;
+    max-height: 320px;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.chart-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+    border-radius: 1.5rem 1.5rem 0 0;
+}
+
+.chart-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.08);
+}
+
+.chart-card canvas {
+    max-height: 220px !important;
+    border-radius: 0.75rem;
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid rgba(102, 126, 234, 0.1);
+    position: relative;
+}
+
+.chart-header::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 60px;
+    height: 2px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 1px;
+}
+
+.chart-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1a202c;
+    margin: 0;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.chart-title i {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.table-modern {
+    border-radius: 0.75rem;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.table-modern thead {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+
+.table-modern tbody tr:hover {
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.badge-modern {
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+.btn-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 2rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    letter-spacing: 0.05em;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-gradient::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.6s;
+}
+
+.btn-gradient:hover::before {
+    left: 100%;
+}
+
+.btn-gradient:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 50%, #e878d4 100%);
+    color: white;
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.form-control-modern {
+    border: 2px solid #e2e8f0;
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control-modern:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.loading-spinner {
+    display: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .stat-card {
+        margin-bottom: 1rem;
+    }
+    
+    .chart-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .table-modern {
+        font-size: 0.875rem;
+    }
+}
+
+/* Animation Classes */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Custom Scrollbar */
+.table-responsive::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+</style>
+{% endblock %}
+{% block title %}Sales Report - Dress Shop{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <!-- Header -->
+    <div class="dashboard-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="mb-2 fw-bold">
+                        <i class="fas fa-chart-line me-3"></i>Sales Analytics Dashboard
+                    </h1>
+                    <p class="mb-0 opacity-75">Comprehensive insights into your business performance</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <div class="d-flex gap-2 justify-content-md-end">
+                        <button type="button" class="btn btn-light" onclick="exportData()">
+                            <i class="fas fa-download me-2"></i>Export
+                        </button>
+                        <a href="{% url 'shop:bill_list' %}" class="btn btn-outline-light">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Bills
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Statistics Cards -->
+        <div class="row mb-4 fade-in">
+            <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                <div class="stat-card">
+                    <div class="stat-icon revenue">
+                        <i class="fas fa-rupee-sign"></i>
+                    </div>
+                    <div class="stat-value">
+                        {% if total_revenue > 10000000 %}
+                            ₹{{ total_revenue|floatformat:0 }}L
+                        {% elif total_revenue > 100000 %}
+                            ₹{{ total_revenue|floatformat:0 }}K
+                        {% else %}
+                            ₹{{ total_revenue|floatformat:0 }}
+                        {% endif %}
+                    </div>
+                    <div class="stat-label">Total Revenue</div>
+                    {% if revenue_growth != 0 %}
+                        <div class="growth-indicator {% if revenue_growth > 0 %}positive{% else %}negative{% endif %}">
+                            <i class="fas fa-arrow-{% if revenue_growth > 0 %}up{% else %}down{% endif %} me-1"></i>
+                            {{ revenue_growth|floatformat:1 }}%
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                <div class="stat-card">
+                    <div class="stat-icon bills">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="stat-value">
+                        {% if total_bills > 999999 %}
+                            {{ total_bills|floatformat:0 }}
+                        {% else %}
+                            {{ total_bills }}
+                        {% endif %}
+                    </div>
+                    <div class="stat-label">Total Orders</div>
+                    {% if bills_growth != 0 %}
+                        <div class="growth-indicator {% if bills_growth > 0 %}positive{% else %}negative{% endif %}">
+                            <i class="fas fa-arrow-{% if bills_growth > 0 %}up{% else %}down{% endif %} me-1"></i>
+                            {{ bills_growth|floatformat:1 }}%
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                <div class="stat-card">
+                    <div class="stat-icon items">
+                        <i class="fas fa-box"></i>
+                    </div>
+                    <div class="stat-value">{{ total_items_sold }}</div>
+                    <div class="stat-label">Items Sold</div>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                <div class="stat-card">
+                    <div class="stat-icon average">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <div class="stat-value">₹{{ avg_bill_amount|floatformat:0 }}</div>
+                    <div class="stat-label">Avg Order Value</div>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                <div class="stat-card">
+                    <div class="stat-icon discount">
+                        <i class="fas fa-tags"></i>
+                    </div>
+                    <div class="stat-value">₹{{ total_discount|floatformat:0 }}</div>
+                    <div class="stat-label">Total Discount</div>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                <div class="stat-card">
+                    <div class="stat-icon tax">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                    <div class="stat-value">₹{{ total_tax|floatformat:0 }}</div>
+                    <div class="stat-label">Total Tax</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-card fade-in">
+            <form method="get" id="filterForm" hx-get="{% url 'shop:sales_report' %}" hx-target="#sales-content" hx-trigger="submit">
+                <div class="row align-items-end">
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold">Start Date</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-calendar"></i>
+                            </span>
+                            <input type="date" class="form-control form-control-modern" name="start_date" value="{{ start_date|default:'' }}" 
+                                   hx-get="{% url 'shop:sales_report' %}" hx-target="#sales-content" 
+                                   hx-trigger="change" hx-include="[name='end_date'], [name='status'], [name='payment_method'], [name='customer']">
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold">End Date</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-calendar-check"></i>
+                            </span>
+                            <input type="date" class="form-control form-control-modern" name="end_date" value="{{ end_date|default:'' }}"
+                                   hx-get="{% url 'shop:sales_report' %}" hx-target="#sales-content" 
+                                   hx-trigger="change" hx-include="[name='start_date'], [name='status'], [name='payment_method'], [name='customer']">
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold">Status</label>
+                        <select class="form-select form-control-modern" name="status" 
+                                hx-get="{% url 'shop:sales_report' %}" hx-target="#sales-content" 
+                                hx-trigger="change" hx-include="[name='start_date'], [name='end_date'], [name='payment_method'], [name='customer']">
+                            <option value="">All Status</option>
+                            {% for status_value, status_label in bill_status_choices %}
+                                <option value="{{ status_value }}" {% if status_filter == status_value %}selected{% endif %}>
+                                    {{ status_label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold">Payment Method</label>
+                        <select class="form-select form-control-modern" name="payment_method"
+                                hx-get="{% url 'shop:sales_report' %}" hx-target="#sales-content" 
+                                hx-trigger="change" hx-include="[name='start_date'], [name='end_date'], [name='status'], [name='customer']">
+                            <option value="">All Methods</option>
+                            {% for method_value, method_label in payment_methods %}
+                                <option value="{{ method_value }}" {% if payment_filter == method_value %}selected{% endif %}>
+                                    {{ method_label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold">Customer</label>
+                        <input type="text" class="form-control form-control-modern" name="customer" value="{{ customer_filter|default:'' }}" 
+                               placeholder="Search customer..."
+                               hx-get="{% url 'shop:sales_report' %}" hx-target="#sales-content" 
+                               hx-trigger="keyup changed delay:500ms" hx-include="[name='start_date'], [name='end_date'], [name='status'], [name='payment_method']">
+                        <span class="htmx-indicator">
+                            <span class="spinner-border spinner-border-sm" role="status"></span>
+                        </span>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-gradient flex-fill">
+                                <i class="fas fa-filter me-2"></i>Apply
+                                <span class="htmx-indicator">
+                                    <span class="spinner-border spinner-border-sm ms-1" role="status"></span>
+                                </span>
+                            </button>
+                            <a href="{% url 'shop:sales_report' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Charts Row 1 -->
+        <div id="sales-content">
+            <div class="row mb-4">
+                <div class="col-lg-3 mb-3">
+                    <div class="chart-card fade-in">
+                        <div class="chart-header">
+                            <h5 class="chart-title">
+                                <i class="fas fa-chart-line text-primary me-2"></i>
+                                Revenue Trend (Last 30 Days)
+                            </h5>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button type="button" class="btn btn-outline-primary active" onclick="updateChart('revenue')">Revenue</button>
+                                <button type="button" class="btn btn-outline-primary" onclick="updateChart('orders')">Orders</button>
+                            </div>
+                        </div>
+                        <canvas id="salesChart" height="80"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-3 mb-3">
+                    <div class="chart-card fade-in">
+                        <div class="chart-header">
+                            <h5 class="chart-title">
+                                <i class="fas fa-clock text-info me-2"></i>
+                                Sales by Hour
+                            </h5>
+                        </div>
+                        <canvas id="hourlyChart" height="80"></canvas>
+                    </div>
+                </div>
+            </div>
+
+        <!-- Tables Row -->
+        <div class="row mb-4">
+            <div class="col-lg-4 mb-3">
+                <div class="chart-card fade-in">
+                    <div class="chart-header">
+                        <h5 class="chart-title">
+                            <i class="fas fa-users text-success me-2"></i>
+                            Top Customers
+                        </h5>
+                        <span class="badge bg-success">{{ top_customers|length }} customers</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-modern">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Customer</th>
+                                    <th>Revenue</th>
+                                    <th>Orders</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for customer in top_customers %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge badge-modern bg-primary">{{ forloop.counter }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="fw-semibold">{{ customer.customer__name|truncatechars:20 }}</div>
+                                            <small class="text-muted">{{ customer.bill_count }} orders</small>
+                                        </td>
+                                        <td>
+                                            <div class="fw-semibold">₹{{ customer.total_spent|floatformat:0 }}</div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ customer.bill_count }}</span>
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-4">
+                                            <i class="fas fa-users fa-2x mb-2 d-block"></i>
+                                            No customer data available
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-3">
+                <div class="chart-card fade-in">
+                    <div class="chart-header">
+                        <h5 class="chart-title">
+                            <i class="fas fa-credit-card text-warning me-2"></i>
+                            Payment Methods
+                        </h5>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-modern">
+                            <thead>
+                                <tr>
+                                    <th>Method</th>
+                                    <th>Orders</th>
+                                    <th>Revenue</th>
+                                    <th>%</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stat in payment_stats %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge badge-modern bg-light text-dark">
+                                                {{ stat.get_payment_method_display|default:stat.payment_method }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ stat.count }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="fw-semibold">₹{{ stat.total|floatformat:0 }}</div>
+                                        </td>
+                                        <td>
+                                            {% if total_revenue > 0 and stat.total > 0 %}
+                                                {% with stat.total|floatformat:0 as stat_total %}
+                                                {% with total_revenue|floatformat:0 as revenue_total %}
+                                                {% if revenue_total != "0" %}
+                                                    {% widthratio stat_total revenue_total 100 as percentage %}
+                                                    <div class="progress" style="height: 6px;">
+                                                        <div class="progress-bar bg-gradient" style="width: {{ percentage }}%"></div>
+                                                    </div>
+                                                    <small>{{ percentage }}%</small>
+                                                {% else %}
+                                                    <small>0%</small>
+                                                {% endif %}
+                                                {% endwith %}
+                                                {% endwith %}
+                                            {% else %}
+                                                <small>0%</small>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-4">
+                                            <i class="fas fa-credit-card fa-2x mb-2 d-block"></i>
+                                            No payment data available
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-3">
+                <div class="chart-card fade-in">
+                    <div class="chart-header">
+                        <h5 class="chart-title">
+                            <i class="fas fa-box text-danger me-2"></i>
+                            Top Products
+                        </h5>
+                        <span class="badge bg-danger">{{ top_products|length }} products</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-modern">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Units</th>
+                                    <th>Revenue</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in top_products %}
+                                    <tr>
+                                        <td>
+                                            <div class="fw-semibold">{{ product.items__product__name|truncatechars:25 }}</div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-primary">{{ product.total_quantity }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="fw-semibold">₹{{ product.total_revenue|floatformat:0 }}</div>
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="3" class="text-center text-muted py-4">
+                                            <i class="fas fa-box fa-2x mb-2 d-block"></i>
+                                            No product data available
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Overview -->
+        {% if status_stats %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="chart-card fade-in">
+                    <div class="chart-header">
+                        <h5 class="chart-title">
+                            <i class="fas fa-tasks text-secondary me-2"></i>
+                            Order Status Overview
+                        </h5>
+                    </div>
+                    <div class="row">
+                        {% for stat in status_stats %}
+                            <div class="col-md-3 mb-3">
+                                <div class="text-center p-3 border rounded">
+                                    <h4 class="mb-1">{{ stat.count }}</h4>
+                                    <p class="mb-0 text-capitalize">{{ stat.status }}</p>
+                                    <small class="text-muted">₹{{ stat.total|floatformat:0 }}</small>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Sales Chart
+const dailySales = {{ daily_sales|safe }};
+const hourlySales = {{ hourly_sales|safe }};
+
+// Validate and prepare daily sales data
+const validDailySales = Array.isArray(dailySales) && dailySales.length > 0 ? 
+    dailySales.map(item => ({
+        date: item.date || '',
+        revenue: (item.revenue && !isNaN(item.revenue) && isFinite(item.revenue)) ? parseFloat(item.revenue) : 0,
+        count: (item.count && !isNaN(item.count) && isFinite(item.count)) ? parseInt(item.count) : 0
+    })) : [];
+
+// Initialize Revenue Chart
+const salesCtx = document.getElementById('salesChart').getContext('2d');
+const salesChart = new Chart(salesCtx, {
+    type: 'line',
+    data: {
+        labels: validDailySales.map(item => new Date(item.date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })),
+        datasets: [{
+            label: 'Revenue',
+            data: validDailySales.map(item => item.revenue),
+            borderColor: 'rgba(102, 126, 234, 1)',
+            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 4,
+            pointHoverRadius: 8,
+            pointBackgroundColor: '#667eea',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointHoverBackgroundColor: '#764ba2',
+            pointHoverBorderColor: '#fff',
+            pointHoverBorderWidth: 3
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+            intersect: false,
+            mode: 'index'
+        },
+        scales: {
+            x: {
+                grid: {
+                    display: false
+                },
+                ticks: {
+                    color: '#718096',
+                    font: {
+                        size: 11,
+                        weight: '500'
+                    }
+                }
+            },
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: 'rgba(102, 126, 234, 0.05)',
+                    drawBorder: false
+                },
+                ticks: {
+                    color: '#718096',
+                    font: {
+                        size: 11,
+                        weight: '500'
+                    },
+                    callback: function(value) {
+                        if (value >= 100000) {
+                            return '₹' + (value / 100000).toFixed(1) + 'L';
+                        } else if (value >= 1000) {
+                            return '₹' + (value / 1000).toFixed(1) + 'K';
+                        }
+                        return '₹' + value;
+                    }
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                backgroundColor: 'rgba(26, 32, 44, 0.95)',
+                titleColor: '#fff',
+                bodyColor: '#fff',
+                padding: 12,
+                cornerRadius: 8,
+                displayColors: false,
+                titleFont: {
+                    size: 14,
+                    weight: '600'
+                },
+                bodyFont: {
+                    size: 13,
+                    weight: '500'
+                },
+                callbacks: {
+                    label: function(context) {
+                        return 'Revenue: ₹' + context.parsed.y.toLocaleString('en-IN');
+                    }
+                }
+            }
+        },
+        scales: {
+            x: {
+                grid: {
+                    display: false
+                }
+            },
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return '₹' + (value / 1000).toFixed(0) + 'k';
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Initialize Hourly Chart
+const hourlyCtx = document.getElementById('hourlyChart').getContext('2d');
+
+// Validate and prepare hourly sales data
+const validHourlySales = Array.isArray(hourlySales) && hourlySales.length > 0 ? 
+    hourlySales.map(item => ({
+        hour: item.hour || 0,
+        revenue: (item.revenue && !isNaN(item.revenue) && isFinite(item.revenue)) ? parseFloat(item.revenue) : 0,
+        count: (item.count && !isNaN(item.count) && isFinite(item.count)) ? parseInt(item.count) : 0
+    })) : 
+    Array.from({length: 24}, (_, i) => ({hour: i, revenue: 0, count: 0}));
+
+const hourlyChart = new Chart(hourlyCtx, {
+    type: 'bar',
+    data: {
+        labels: validHourlySales.map(item => item.hour + ':00'),
+        datasets: [{
+            label: 'Revenue',
+            data: validHourlySales.map(item => item.revenue),
+            backgroundColor: 'rgba(79, 172, 254, 0.8)',
+            borderColor: 'rgba(79, 172, 254, 1)',
+            borderWidth: 2,
+            borderRadius: 8,
+            hoverBackgroundColor: 'rgba(79, 172, 254, 1)',
+            hoverBorderColor: 'rgba(79, 172, 254, 1)',
+            hoverBorderWidth: 3
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+            intersect: false,
+            mode: 'index'
+        },
+        scales: {
+            x: {
+                grid: {
+                    display: false
+                },
+                ticks: {
+                    color: '#718096',
+                    font: {
+                        size: 11,
+                        weight: '500'
+                    }
+                }
+            },
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: 'rgba(79, 172, 254, 0.05)',
+                    drawBorder: false
+                },
+                ticks: {
+                    color: '#718096',
+                    font: {
+                        size: 11,
+                        weight: '500'
+                    },
+                    callback: function(value) {
+                        if (value >= 100000) {
+                            return '₹' + (value / 100000).toFixed(1) + 'L';
+                        } else if (value >= 1000) {
+                            return '₹' + (value / 1000).toFixed(1) + 'K';
+                        }
+                        return '₹' + value;
+                    }
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                backgroundColor: 'rgba(26, 32, 44, 0.95)',
+                titleColor: '#fff',
+                bodyColor: '#fff',
+                padding: 12,
+                cornerRadius: 8,
+                displayColors: false,
+                titleFont: {
+                    size: 14,
+                    weight: '600'
+                },
+                bodyFont: {
+                    size: 13,
+                    weight: '500'
+                },
+                callbacks: {
+                    label: function(context) {
+                        return 'Revenue: ₹' + context.parsed.y.toLocaleString('en-IN');
+                    }
+                }
+            }
+        },
+        scales: {
+            x: {
+                grid: {
+                    display: false
+                }
+            },
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return '₹' + (value / 1000).toFixed(0) + 'k';
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Update chart function
+function updateChart(type) {
+    const buttons = document.querySelectorAll('.btn-group .btn');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    if (type === 'orders') {
+        salesChart.data.datasets[0].data = dailySales.map(item => item.count);
+        salesChart.data.datasets[0].label = 'Orders';
+        salesChart.data.datasets[0].borderColor = '#f093fb';
+        salesChart.data.datasets[0].backgroundColor = 'rgba(240, 147, 251, 0.1)';
+    } else {
+        salesChart.data.datasets[0].data = dailySales.map(item => item.revenue);
+        salesChart.data.datasets[0].label = 'Revenue';
+        salesChart.data.datasets[0].borderColor = '#667eea';
+        salesChart.data.datasets[0].backgroundColor = 'rgba(102, 126, 234, 0.1)';
+    }
+    salesChart.update();
+}
+
+// Export function
+function exportData() {
+    const form = document.getElementById('filterForm');
+    const formData = new FormData(form);
+    const params = new URLSearchParams(formData);
+    window.open(`{% url 'shop:sales_report' %}?export=excel&${params.toString()}`, '_blank');
+}
+
+// Loading state
+document.getElementById('filterForm').addEventListener('submit', function() {
+    const spinner = this.querySelector('.loading-spinner');
+    const button = this.querySelector('button[type="submit"]');
+    spinner.style.display = 'inline-block';
+    button.disabled = true;
+});
+
+// Auto-refresh every 5 minutes
+setInterval(() => {
+    location.reload();
+}, 300000);
+</script>
+{% endblock %}

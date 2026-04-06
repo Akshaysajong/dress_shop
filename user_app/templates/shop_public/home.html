@@ -1,0 +1,127 @@
+{% extends 'shop_public/base.html' %}
+
+{% block title %}Dress Shop - Home{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">Discover Your Perfect Style</h1>
+                <p class="lead mb-4">Shop our latest collection of fashionable clothing and accessories. Quality meets style in every piece.</p>
+                <a href="{% url 'shop_public:shop_public_products_list' %}" class="btn btn-light btn-lg">
+                    <i class="fas fa-shopping-bag me-2"></i>Shop Now
+                </a>
+            </div>
+            <div class="col-lg-6">
+                <div class="text-center">
+                    <i class="fas fa-tshirt" style="font-size: 8rem; opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Products -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h2 class="text-center mb-5">Featured Products</h2>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            {% for product in featured_products %}
+            <div class="col-md-6 col-lg-3">
+                <div class="card product-card">
+                    <div class="position-relative">
+                        {% if product.main_image %}
+                            <img src="{{ product.main_image.url }}" class="product-image" alt="{{ product.name }}">
+                        {% else %}
+                            <div class="product-image d-flex align-items-center justify-content-center bg-light">
+                                <i class="fas fa-tshirt fa-3x text-muted"></i>
+                            </div>
+                        {% endif %}
+                        {% if product.is_featured %}
+                            <span class="badge-new">Featured</span>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ product.name }}</h5>
+                        <p class="card-text text-muted small">{{ product.get_gender_display }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="h5 text-primary mb-0">₹{{ product.effective_price|floatformat:0 }}</span>
+                            {% if product.discount_percentage > 0 %}
+                                <small class="text-muted text-decoration-line-through">₹{{ product.selling_price|floatformat:0 }}</small>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'shop_public:shop_public_product_detail' product.slug %}" class="btn btn-outline-primary btn-sm mt-2 w-100">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <p class="text-muted">No featured products available at the moment.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Latest Products -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h2 class="text-center mb-5">Latest Arrivals</h2>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            {% for product in latest_products %}
+            <div class="col-md-6 col-lg-3">
+                <div class="card product-card">
+                    <div class="position-relative">
+                        {% if product.main_image %}
+                            <img src="{{ product.main_image.url }}" class="product-image" alt="{{ product.name }}">
+                        {% else %}
+                            <div class="product-image d-flex align-items-center justify-content-center bg-light">
+                                <i class="fas fa-tshirt fa-3x text-muted"></i>
+                            </div>
+                        {% endif %}
+                        <span class="badge-new">New</span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ product.name }}</h5>
+                        <p class="card-text text-muted small">{{ product.get_gender_display }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="h5 text-primary mb-0">₹{{ product.effective_price|floatformat:0 }}</span>
+                            {% if product.discount_percentage > 0 %}
+                                <small class="text-muted text-decoration-line-through">₹{{ product.selling_price|floatformat:0 }}</small>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'shop_public:shop_public_product_detail' product.slug %}" class="btn btn-outline-primary btn-sm mt-2 w-100">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <p class="text-muted">No latest products available at the moment.</p>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-5">
+            <a href="{% url 'shop_public:shop_public_products_list' %}" class="btn btn-primary btn-lg">
+                View All Products <i class="fas fa-arrow-right ms-2"></i>
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
