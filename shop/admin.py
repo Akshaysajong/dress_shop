@@ -49,7 +49,7 @@ class ProductImageInline(admin.TabularInline):
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = ['name', 'brand', 'gender', 'category', 'total_stock_display', 'effective_price_display', 'is_active', 'is_featured', 'created_at']
-    list_filter = ['category', 'gender', 'season', 'occasion', 'brand', 'is_active', 'is_featured']
+    list_filter = ['category', 'gender', 'brand', 'is_active', 'is_featured']
     search_fields = ['name', 'description', 'sku', 'brand__name']
     list_editable = ['is_active', 'is_featured']
     ordering = ['-created_at']
@@ -57,13 +57,13 @@ class ProductAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('Basic Information', {
-            'fields': ('name', 'slug', 'description', 'brand', 'sku', 'barcode')
+            'fields': ('name', 'slug', 'description', 'brand', 'sku')
         }),
         ('Categorization', {
-            'fields': ('category', 'gender', 'season', 'occasion')
+            'fields': ('category', 'gender')
         }),
-        ('Material & Quality', {
-            'fields': ('materials', 'fabric_type', 'weight')
+        ('Material', {
+            'fields': ('materials',)
         }),
         ('Pricing', {
             'fields': ('base_price', 'selling_price', 'discount_percentage')
@@ -71,8 +71,8 @@ class ProductAdmin(admin.ModelAdmin):
         ('Images', {
             'fields': ('main_image',)
         }),
-        ('Inventory', {
-            'fields': ('reorder_level', 'is_active', 'is_featured')
+        ('Status', {
+            'fields': ('is_active', 'is_featured')
         }),
     )
     

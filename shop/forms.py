@@ -13,19 +13,17 @@ class BrandForm(forms.ModelForm):
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['name', 'description', 'brand', 'sku', 'barcode', 
-                  'category', 'gender', 'season', 'occasion',
-                  'materials', 'fabric_type', 'weight',
+        fields = ['name', 'description', 'brand', 'sku',
+                  'category', 'gender',
+                  'materials',
                   'base_price', 'selling_price', 'discount_percentage',
-                  'main_image', 'reorder_level', 
+                  'main_image', 
                   'is_active', 'is_featured']
         widgets = {
             'description': forms.Textarea(attrs={'rows': 3}),
             'base_price': forms.NumberInput(attrs={'step': '0.01', 'min': '0'}),
             'selling_price': forms.NumberInput(attrs={'step': '0.01', 'min': '0'}),
             'discount_percentage': forms.NumberInput(attrs={'step': '0.1', 'min': '0', 'max': '100'}),
-            'reorder_level': forms.NumberInput(attrs={'min': '0'}),
-            'weight': forms.NumberInput(attrs={'step': '0.01', 'min': '0'}),
         }
 
 class ProductVariantForm(forms.ModelForm):

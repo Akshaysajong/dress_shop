@@ -2,6 +2,10 @@ from django.shortcuts import render, get_object_or_404
 from shop.models import Product, ProductVariant
 
 
+def login(request):
+    """Login page"""
+    pass
+
 def home(request):
     """Home page with featured products"""
     # Get featured products
